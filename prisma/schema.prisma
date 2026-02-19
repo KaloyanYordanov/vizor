@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Multi-Tenant ───────────────────────────────────────────
+
+model Company {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  logo      String?
+  website   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[]
+  users     User[]
+
+  @@map("companies")
+}
+
+// ─── Auth ───────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(VIEWER)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ─── Project / Building / Floor / Apartment ─────────────────
+
+model Project {
+  id              String     @id @default(uuid())
+  name            String
+  slug            String
+  description     String?
+  address         String?
+  coverImage      String?
+  companyId       String
+  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  buildings       Building[]
+  // IREPlugin-style settings
+  currencySymbol  String     @default("€")
+  areaUnit        String     @default("m²")
+  primaryColor    String     @default("#3b82f6")
+  availableColor  String     @default("#22c55e")
+  reservedColor   String     @default("#f59e0b")
+  soldColor       String     @default("#ef4444")
+  unavailableColor String    @default("#9ca3af")
+  strokeColor     String     @default("#1e293b")
+  strokeWidth     Float      @default(2)
+  tooltipStyle    String     @default("modern")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([companyId, slug])
+  @@map("projects")
+}
+
+model Building {
+  id                String   @id @default(uuid())
+  name              String
+  slug              String
+  description       String?
+  svgContent        String?  @db.Text // The full SVG markup for building exterior
+  imageUrl          String?           // Optional raster image for building facade
+  floorsPolygonData Json?             // Array of { floorNumber, points: [{x,y}] } polygon-to-floor mappings
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  floors            Floor[]
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([projectId, slug])
+  @@map("buildings")
+}
+
+model Floor {
+  id          String      @id @default(uuid())
+  number      Int
+  label       String?     // e.g. "Ground Floor", "Penthouse"
+  svgContent  String?     @db.Text // SVG markup for this floor plan
+  imageUrl    String?
+  buildingId  String
+  building    Building    @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  apartments  Apartment[]
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([buildingId, number])
+  @@map("floors")
+}
+
+enum ApartmentStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  UNAVAILABLE
+}
+
+model Apartment {
+  id            String          @id @default(uuid())
+  number        String          // e.g. "A-101"
+  rooms         Float           // e.g. 2.5
+  area          Float           // square meters
+  price         Float?
+  pricePerSqm   Float?
+  status        ApartmentStatus @default(AVAILABLE)
+  svgPathId     String?         // CSS selector / ID inside floor SVG
+  polygonData   Json?           // Array of {x, y} normalized coords for drawn polygon
+  description   String?
+  features      String?         // JSON string of features
+  floorId       String
+  floor         Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  floorPlanUrl  String?         // individual apartment floor plan image
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([floorId, number])
+  @@map("apartments")
+}

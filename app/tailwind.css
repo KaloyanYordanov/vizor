@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Styles ────────────────────────────────────── */
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+/* ─── SVG Interactive Regions ────────────────────────── */
+@layer components {
+  .floor-region,
+  .apartment-region {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .floor-region:hover,
+  .apartment-region:hover {
+    filter: brightness(0.9);
+    stroke-width: 3;
+  }
+
+  .floor-region.active {
+    fill: #93c5fd;
+    stroke: #2563eb;
+    stroke-width: 3;
+  }
+
+  .apartment-region[data-status="available"] {
+    fill: #dcfce7;
+    stroke: #22c55e;
+  }
+
+  .apartment-region[data-status="reserved"] {
+    fill: #fef9c3;
+    stroke: #f59e0b;
+  }
+
+  .apartment-region[data-status="sold"] {
+    fill: #fecaca;
+    stroke: #ef4444;
+  }
+
+  .apartment-region[data-status="unavailable"] {
+    fill: #e5e7eb;
+    stroke: #9ca3af;
+    cursor: default;
+  }
+
+  .apartment-region.highlighted {
+    stroke-width: 3;
+    filter: brightness(0.85);
+  }
+
+  /* ─── Status badges ─────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-available {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-reserved {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-sold {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .badge-unavailable {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  /* ─── Card ──────────────────────────────────────── */
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+
+  .card-header {
+    @apply border-b border-gray-100 px-6 py-4;
+  }
+
+  .card-body {
+    @apply px-6 py-4;
+  }
+
+  /* ─── Buttons ───────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500;
+  }
+
+  .btn-secondary {
+    @apply btn border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-brand-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  /* ─── Form inputs ───────────────────────────────── */
+  .input {
+    @apply block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .select {
+    @apply input appearance-none bg-white;
+  }
+}

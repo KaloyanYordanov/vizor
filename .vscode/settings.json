@@ -1,0 +1,11 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npx create-remix@latest": true,
+        "npx --yes create-remix@latest": true,
+        "npm init": true,
+        "npm install": true,
+        "pg_isready": true,
+        "brew": true,
+        "psql": true
+    }
+}
