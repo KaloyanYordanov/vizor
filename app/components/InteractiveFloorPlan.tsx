@@ -1,6 +1,11 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { getStatusColor as getStatusColorUtil, ensureRgba } from "~/utils/colors";
+import {
+  DEFAULT_VIEWER_COLORS,
+  getStatusColor as getStatusColorUtil,
+  getStatusStroke as getStatusStrokeUtil,
+  ensureRgba,
+} from "~/utils/colors";
 
 interface ApartmentData {
   id: string;
@@ -42,14 +47,7 @@ interface InteractiveFloorPlanProps {
   className?: string;
 }
 
-const defaultColors = {
-  available: "#22c55e",
-  reserved: "#f59e0b",
-  sold: "#ef4444",
-  unavailable: "#9ca3af",
-  stroke: "#1e293b",
-  strokeWidth: 2,
-};
+const defaultColors = DEFAULT_VIEWER_COLORS;
 
 
 
@@ -85,15 +83,7 @@ export function InteractiveFloorPlan({
   );
 
   const getStatusStroke = useCallback(
-    (status: string) => {
-      const colorMap: Record<string, string> = {
-        AVAILABLE: colors.available,
-        RESERVED: colors.reserved,
-        SOLD: colors.sold,
-        UNAVAILABLE: colors.unavailable,
-      };
-      return colorMap[status] || colors.unavailable;
-    },
+    (status: string) => getStatusStrokeUtil(status, colors),
     [colors]
   );
 

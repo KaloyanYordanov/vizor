@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { ensureRgba } from "~/utils/colors";
+import { ensureRgba, STATUS_HEX } from "~/utils/colors";
 
 interface FloorPolygon {
   apartmentId: string; // actually floorId — reuses PolygonEditor's generic field
@@ -53,13 +53,13 @@ export function BuildingFloorSelector({
 
     let baseColor: string;
     if (total === 0) {
-      baseColor = colors.available || "#22c55e";
+      baseColor = colors.available || STATUS_HEX.AVAILABLE;
     } else if (available === 0) {
-      baseColor = colors.sold || "#ef4444";
+      baseColor = colors.sold || STATUS_HEX.SOLD;
     } else if (available < total) {
-      baseColor = colors.reserved || "#f59e0b";
+      baseColor = colors.reserved || STATUS_HEX.RESERVED;
     } else {
-      baseColor = colors.available || "#22c55e";
+      baseColor = colors.available || STATUS_HEX.AVAILABLE;
     }
 
     const alpha = isHovered ? 0.55 : 0.3;

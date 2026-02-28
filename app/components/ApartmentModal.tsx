@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react";
 import type { ApartmentStatus } from "@prisma/client";
+import { STATUS_UI } from "~/utils/colors";
 
 interface ApartmentModalProps {
   apartment: {
@@ -25,12 +26,7 @@ interface ApartmentModalProps {
   onRequestSubmit?: (data: { name: string; email: string; phone: string; message: string }) => void;
 }
 
-const statusConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
-  AVAILABLE: { label: "Available", bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  RESERVED: { label: "Reserved", bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200" },
-  SOLD: { label: "Sold", bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
-  UNAVAILABLE: { label: "Unavailable", bg: "bg-gray-50", text: "text-gray-500", border: "border-gray-200" },
-};
+const statusConfig = STATUS_UI;
 
 export function ApartmentModal({
   apartment,

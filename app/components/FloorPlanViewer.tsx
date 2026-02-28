@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ensureRgba, STATUS_HEX } from "~/utils/colors";
 
 interface ApartmentData {
   id: string;
@@ -43,10 +44,10 @@ export function FloorPlanViewer({
   }>({ visible: false, x: 0, y: 0, apartment: null });
 
   const statusColors: Record<string, { fill: string; stroke: string }> = {
-    AVAILABLE: { fill: "#dcfce7", stroke: "#22c55e" },
-    RESERVED: { fill: "#fef9c3", stroke: "#f59e0b" },
-    SOLD: { fill: "#fecaca", stroke: "#ef4444" },
-    UNAVAILABLE: { fill: "#e5e7eb", stroke: "#9ca3af" },
+    AVAILABLE: { fill: ensureRgba(STATUS_HEX.AVAILABLE, 0.15), stroke: STATUS_HEX.AVAILABLE },
+    RESERVED: { fill: ensureRgba(STATUS_HEX.RESERVED, 0.15), stroke: STATUS_HEX.RESERVED },
+    SOLD: { fill: ensureRgba(STATUS_HEX.SOLD, 0.15), stroke: STATUS_HEX.SOLD },
+    UNAVAILABLE: { fill: ensureRgba(STATUS_HEX.UNAVAILABLE, 0.15), stroke: STATUS_HEX.UNAVAILABLE },
   };
 
   // Apply colors and attach event handlers

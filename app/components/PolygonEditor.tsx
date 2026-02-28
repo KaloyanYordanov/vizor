@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { ensureRgba } from "~/utils/colors";
+import { ensureRgba, STATUS_HEX } from "~/utils/colors";
 
 /**
  * A single polygon: array of {x, y} points (0-1 normalized coordinates).
@@ -49,10 +49,10 @@ export function PolygonEditor({
   onPolygonsChange,
   itemLabel = "Apartment",
   statusColors = {
-    AVAILABLE: ensureRgba("#22c55e", 0.35),
-    RESERVED: ensureRgba("#f59e0b", 0.35),
-    SOLD: ensureRgba("#ef4444", 0.35),
-    UNAVAILABLE: ensureRgba("#9ca3af", 0.35),
+    AVAILABLE: ensureRgba(STATUS_HEX.AVAILABLE, 0.35),
+    RESERVED: ensureRgba(STATUS_HEX.RESERVED, 0.35),
+    SOLD: ensureRgba(STATUS_HEX.SOLD, 0.35),
+    UNAVAILABLE: ensureRgba(STATUS_HEX.UNAVAILABLE, 0.35),
   },
   className = "",
 }: PolygonEditorProps) {

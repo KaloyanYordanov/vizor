@@ -8,6 +8,7 @@ import { InteractiveFloorPlan } from "~/components/InteractiveFloorPlan";
 import { ApartmentModal } from "~/components/ApartmentModal";
 import { ApartmentListView } from "~/components/ApartmentListView";
 import { FilterBar, type FilterValues } from "~/components/FilterBar";
+import { DEFAULT_VIEWER_COLORS } from "~/utils/colors";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => [
   { title: data ? `${data.project.name} | Vizor` : "Project | Vizor" },
@@ -141,12 +142,12 @@ export default function ProjectViewer() {
   const areaUnit = project.areaUnit ?? "m²";
 
   const viewerColors = {
-    available: project.availableColor ?? "#22c55e",
-    reserved: project.reservedColor ?? "#f59e0b",
-    sold: project.soldColor ?? "#ef4444",
-    unavailable: project.unavailableColor ?? "#9ca3af",
-    stroke: project.strokeColor ?? "#1e293b",
-    strokeWidth: project.strokeWidth ?? 2,
+    available: project.availableColor ?? DEFAULT_VIEWER_COLORS.available,
+    reserved: project.reservedColor ?? DEFAULT_VIEWER_COLORS.reserved,
+    sold: project.soldColor ?? DEFAULT_VIEWER_COLORS.sold,
+    unavailable: project.unavailableColor ?? DEFAULT_VIEWER_COLORS.unavailable,
+    stroke: project.strokeColor ?? DEFAULT_VIEWER_COLORS.stroke,
+    strokeWidth: project.strokeWidth ?? DEFAULT_VIEWER_COLORS.strokeWidth,
   };
 
   return (

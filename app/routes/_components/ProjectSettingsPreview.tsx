@@ -1,18 +1,8 @@
 import React, { useState } from "react";
+import { DEFAULT_PROJECT_SETTINGS } from "~/utils/colors";
 
 export default function PreviewSettings({ project }: { project: any }) {
-  const fallback = {
-    currencySymbol: "€",
-    areaUnit: "m²",
-    primaryColor: "#3b82f6",
-    availableColor: "#22c55e",
-    reservedColor: "#f59e0b",
-    soldColor: "#ef4444",
-    unavailableColor: "#9ca3af",
-    strokeColor: "#1e293b",
-    strokeWidth: 2,
-    tooltipStyle: "modern",
-  } as const;
+  const fallback = DEFAULT_PROJECT_SETTINGS;
 
   const [preview, setPreview] = useState({
     currencySymbol: project.currencySymbol ?? fallback.currencySymbol,

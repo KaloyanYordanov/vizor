@@ -6,6 +6,7 @@ import PreviewSettings from "~/routes/_components/ProjectSettingsPreview";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { PageHeader } from "~/components/ui";
+import { DEFAULT_PROJECT_SETTINGS } from "~/utils/colors";
 
 export const meta: MetaFunction = () => [{ title: "Edit Project | Vizor Admin" }];
 
@@ -60,12 +61,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const currencySymbol = (form.get("currencySymbol") as string) || "€";
     const areaUnit = (form.get("areaUnit") as string) || "m²";
     const primaryColor = (form.get("primaryColor") as string) || "#2563eb";
-    const availableColor = (form.get("availableColor") as string) || "#22c55e";
-    const reservedColor = (form.get("reservedColor") as string) || "#f59e0b";
-    const soldColor = (form.get("soldColor") as string) || "#ef4444";
-    const unavailableColor = (form.get("unavailableColor") as string) || "#9ca3af";
-    const strokeColor = (form.get("strokeColor") as string) || "#1e293b";
-    const strokeWidth = parseInt((form.get("strokeWidth") as string) || "2", 10);
+    const availableColor = (form.get("availableColor") as string) || DEFAULT_PROJECT_SETTINGS.availableColor;
+    const reservedColor = (form.get("reservedColor") as string) || DEFAULT_PROJECT_SETTINGS.reservedColor;
+    const soldColor = (form.get("soldColor") as string) || DEFAULT_PROJECT_SETTINGS.soldColor;
+    const unavailableColor = (form.get("unavailableColor") as string) || DEFAULT_PROJECT_SETTINGS.unavailableColor;
+    const strokeColor = (form.get("strokeColor") as string) || DEFAULT_PROJECT_SETTINGS.strokeColor;
+    const strokeWidth = parseInt((form.get("strokeWidth") as string) || String(DEFAULT_PROJECT_SETTINGS.strokeWidth), 10);
     const tooltipStyle = (form.get("tooltipStyle") as string) || "modern";
 
     await prisma.project.update({

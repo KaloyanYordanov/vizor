@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { STATUS_UI } from "~/utils/colors";
 
 interface ApartmentData {
   id: string;
@@ -24,12 +25,7 @@ type ViewMode = "grid" | "table";
 type SortField = "number" | "rooms" | "area" | "price" | "floor" | "status";
 type SortDir = "asc" | "desc";
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  AVAILABLE: { label: "Available", color: "text-green-700", bg: "bg-green-50 border-green-200", dot: "bg-green-500" },
-  RESERVED: { label: "Reserved", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200", dot: "bg-yellow-500" },
-  SOLD: { label: "Sold", color: "text-red-700", bg: "bg-red-50 border-red-200", dot: "bg-red-500" },
-  UNAVAILABLE: { label: "Unavailable", color: "text-gray-500", bg: "bg-gray-50 border-gray-200", dot: "bg-gray-400" },
-};
+const statusConfig = STATUS_UI;
 
 export function ApartmentListView({
   apartments,
@@ -177,7 +173,7 @@ export function ApartmentListView({
                 onClick={() => toggleStatus(key)}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                   filterStatus.includes(key)
-                    ? `${cfg.bg} ${cfg.color}`
+                    ? `${cfg.bg} ${cfg.border} ${cfg.text}`
                     : "bg-gray-50 text-gray-400 border-gray-200"
                 }`}
               >
@@ -268,7 +264,7 @@ export function ApartmentListView({
                       {apt.buildingName} · Floor {apt.floorNumber}
                     </p>
                   </div>
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.color}`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.border} ${sc.text}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                     {sc.label}
                   </span>
@@ -349,7 +345,7 @@ export function ApartmentListView({
                         {apt.price ? `${currencySymbol}${apt.price.toLocaleString()}` : "—"}
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${sc.bg} ${sc.color}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${sc.bg} ${sc.border} ${sc.text}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
                         </span>

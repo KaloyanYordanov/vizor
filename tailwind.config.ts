@@ -17,12 +17,6 @@ export default {
           900: "#1e3a8a",
           950: "#172554",
         },
-        status: {
-          available: "#22c55e",
-          reserved: "#f59e0b",
-          sold: "#ef4444",
-          unavailable: "#9ca3af",
-        },
       },
     },
   },
