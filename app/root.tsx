@@ -11,6 +11,7 @@ import type { LinksFunction } from "@remix-run/node";
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
+  { rel: "icon", href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563eb'/><text x='16' y='23' font-size='20' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'>V</text></svg>", type: "image/svg+xml" },
   { rel: "stylesheet", href: stylesheet },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {

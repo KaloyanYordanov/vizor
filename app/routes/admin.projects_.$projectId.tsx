@@ -54,7 +54,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
       where: { id: params.projectId },
       data: { name, slug, description, address },
     });
-    return json({ success: true });
+    return json({ error: null, success: true });
+  }
+
+  if (intent === "delete-building") {
+    const buildingId = form.get("buildingId") as string;
+    if (!buildingId) {
+      return json({ error: "Building ID is required" }, { status: 400 });
+    }
+    const building = await prisma.building.findUnique({ where: { id: buildingId } });
+    if (!building || building.projectId !== params.projectId) {
+      return json({ error: "Building not found in this project" }, { status: 404 });
+    }
+    await prisma.building.delete({ where: { id: buildingId } });
+    return json({ error: null, success: true });
   }
 
   if (intent === "update-settings") {
@@ -84,7 +97,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         tooltipStyle,
       },
     });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   return json({ error: "Unknown action" }, { status: 400 });
@@ -103,58 +116,59 @@ export default function EditProjectPage() {
 
       {/* Edit form */}
       <div className="card max-w-2xl">
-        <div className="card-header">
-          <h2 className="font-semibold text-sm">Project Details</h2>
-        </div>
-        <div className="card-body">
-          {actionData?.error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{actionData.error}</div>
-          )}
-          <Form method="post" className="space-y-4">
-            <input type="hidden" name="intent" value="update" />
-            <div>
-              <label className="label">Name</label>
-              <input name="name" className="input" defaultValue={project.name} required />
-            </div>
-            <div>
-              <label className="label">Slug</label>
-              <input name="slug" className="input" defaultValue={project.slug} required />
-            </div>
-            <div>
-              <label className="label">Description</label>
-              <textarea name="description" className="input" rows={3} defaultValue={project.description || ""} />
-            </div>
-            <div>
-              <label className="label">Address</label>
-              <input name="address" className="input" defaultValue={project.address || ""} />
-            </div>
-            <div className="flex gap-3">
-              <button type="submit" className="btn-primary">Save</button>
-              <Link to="/admin/projects" className="btn-secondary">Back</Link>
-            </div>
-          </Form>
-        </div>
+        <details>
+          <summary className="card-header cursor-pointer select-none">
+            <span className="font-semibold text-sm">Project Details</span>
+          </summary>
+          <div className="card-body">
+            {actionData?.error && (
+              <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{actionData.error}</div>
+            )}
+            <Form method="post" className="space-y-4">
+              <input type="hidden" name="intent" value="update" />
+              <div>
+                <label className="label">Name</label>
+                <input name="name" className="input" defaultValue={project.name} required />
+              </div>
+              <div>
+                <label className="label">Slug</label>
+                <input name="slug" className="input" defaultValue={project.slug} required />
+              </div>
+              <div>
+                <label className="label">Description</label>
+                <textarea name="description" className="input" rows={3} defaultValue={project.description || ""} />
+              </div>
+              <div>
+                <label className="label">Address</label>
+                <input name="address" className="input" defaultValue={project.address || ""} />
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" className="btn-primary">Save</button>
+                <Link to="/admin/projects" className="btn-secondary">Back</Link>
+              </div>
+            </Form>
+          </div>
+        </details>
       </div>
 
       {/* Display Settings */}
       <div className="card max-w-2xl">
-        <div className="card-header">
-          <h2 className="font-semibold text-sm">Display Settings</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Configure colors, currency, and tooltip style for the public viewer</p>
-        </div>
-        <div className="card-body">
-          {/* live preview + settings form */}
-          <Form method="post" className="space-y-5">
-            <input type="hidden" name="intent" value="update-settings" />
+        <details>
+          <summary className="card-header cursor-pointer select-none">
+            <span className="font-semibold text-sm">Display Settings</span>
+            <p className="text-xs text-gray-500 mt-0.5">Configure colors, currency, and tooltip style for the public viewer</p>
+          </summary>
+          <div className="card-body">
+            {/* live preview + settings form */}
+            <Form method="post" className="space-y-5">
+              <input type="hidden" name="intent" value="update-settings" />
 
-            {/* initialize preview state from project with safe fallbacks */}
-            {/* (we keep inputs uncontrolled for form submission but mirror live changes in previewState) */}
-            {/** preview UI state **/}
-            <PreviewSettings project={project} />
+              <PreviewSettings project={project} />
 
-            <button type="submit" className="btn-primary">Save Settings</button>
-          </Form>
-        </div>
+              <button type="submit" className="btn-primary">Save Settings</button>
+            </Form>
+          </div>
+        </details>
       </div>
 
       {/* Buildings list */}
@@ -181,7 +195,11 @@ export default function EditProjectPage() {
               <tbody>
                 {project.buildings.map((b) => (
                   <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-3 font-medium">{b.name}</td>
+                    <td className="px-6 py-3 font-medium">
+                      <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700">
+                        {b.name}
+                      </Link>
+                    </td>
                     <td className="px-6 py-3">{b._count.floors}</td>
                     <td className="px-6 py-3">
                       {b.svgContent ? (
@@ -191,9 +209,16 @@ export default function EditProjectPage() {
                       )}
                     </td>
                     <td className="px-6 py-3">
-                      <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
-                        Edit
-                      </Link>
+                      <div className="flex gap-2">
+                        <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
+                          Edit
+                        </Link>
+                        <Form method="post" onSubmit={(e) => { if (!confirm("Delete this building?")) e.preventDefault(); }}>
+                          <input type="hidden" name="intent" value="delete-building" />
+                          <input type="hidden" name="buildingId" value={b.id} />
+                          <button type="submit" className="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                        </Form>
+                      </div>
                     </td>
                   </tr>
                 ))}

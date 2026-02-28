@@ -2,10 +2,26 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData, useLocation } from "@remix-run/react";
 import { requireUser } from "~/lib/auth.server";
+import { prisma } from "~/lib/db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request);
-  return json({ user });
+  const where = user.role === "SUPER_ADMIN" ? {} : { companyId: user.companyId! };
+
+  const projects = await prisma.project.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      buildings: {
+        select: { id: true, name: true },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return json({ user, projects });
 }
 
 const allNavItems = [
@@ -16,8 +32,9 @@ const allNavItems = [
 ];
 
 export default function AdminLayout() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, projects } = useLoaderData<typeof loader>();
   const location = useLocation();
+  const isProjectsActive = location.pathname.startsWith("/admin/projects") || location.pathname.startsWith("/admin/buildings");
 
   const navItems = allNavItems.filter(
     (item) => !item.roles || item.roles.includes(user.role)
@@ -34,26 +51,106 @@ export default function AdminLayout() {
           <span className="text-lg font-bold text-gray-900">Vizor</span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`
-              }
-            >
-              <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-              </svg>
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
+          {navItems.map((item) => {
+            // Special rendering for Projects nav item
+            if (item.to === "/admin/projects") {
+              return (
+                <div key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        isActive || isProjectsActive
+                          ? "bg-brand-50 text-brand-700"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`
+                    }
+                  >
+                    <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                    </svg>
+                    {item.label}
+                  </NavLink>
+                  {isProjectsActive && (
+                    <div className="ml-4 mt-1 space-y-0.5 border-l border-gray-200 pl-3">
+                      <NavLink
+                        to="/admin/buildings"
+                        className={({ isActive }) =>
+                          `block rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
+                            isActive
+                              ? "text-brand-700"
+                              : "text-gray-600 hover:text-gray-900"
+                          }`
+                        }
+                      >
+                        All Buildings
+                      </NavLink>
+                      {projects.map((project) => (
+                        <div key={project.id}>
+                          <NavLink
+                            to={`/admin/projects/${project.id}`}
+                            className={({ isActive }) =>
+                              `block rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
+                                isActive
+                                  ? "text-brand-700"
+                                  : "text-gray-600 hover:text-gray-900"
+                              }`
+                            }
+                          >
+                            {project.name}
+                          </NavLink>
+                          {project.buildings.length > 0 && (
+                            <div className="ml-3 space-y-0.5 border-l border-gray-100 pl-2">
+                              {project.buildings.map((building) => (
+                                <NavLink
+                                  key={building.id}
+                                  to={`/admin/buildings/${building.id}`}
+                                  className={({ isActive }) =>
+                                    `block rounded-md px-2 py-1 text-xs transition-colors ${
+                                      isActive
+                                        ? "text-brand-700 font-medium"
+                                        : "text-gray-500 hover:text-gray-700"
+                                    }`
+                                  }
+                                >
+                                  {building.name}
+                                </NavLink>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Skip Buildings nav item — it's now nested under Projects
+            if (item.to === "/admin/buildings") return null;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-brand-50 text-brand-700"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`
+                }
+              >
+                <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                </svg>
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="border-t border-gray-200 p-4">
@@ -102,14 +199,16 @@ export default function AdminLayout() {
 
         {/* Mobile nav */}
         <nav className="flex border-b border-gray-200 bg-white px-2 overflow-x-auto lg:hidden">
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => item.to !== "/admin/buildings")
+            .map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
                 `flex-shrink-0 border-b-2 px-3 py-3 text-sm font-medium ${
-                  isActive
+                  isActive || (item.to === "/admin/projects" && isProjectsActive)
                     ? "border-brand-600 text-brand-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`

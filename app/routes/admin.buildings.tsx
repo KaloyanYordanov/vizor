@@ -59,13 +59,13 @@ export async function action({ request }: ActionFunctionArgs) {
     await prisma.building.create({
       data: { name, slug, description, projectId, sortOrder: count + 1 },
     });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   if (intent === "delete") {
     const id = form.get("id") as string;
     await prisma.building.delete({ where: { id } });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   return json({ error: "Unknown action" }, { status: 400 });
@@ -120,53 +120,79 @@ export default function BuildingsPage() {
       {buildings.length === 0 ? (
         <EmptyState title="No buildings" description="Create your first building above." />
       ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                <th className="px-6 py-3 font-medium text-gray-500">Name</th>
-                <th className="px-6 py-3 font-medium text-gray-500">Project</th>
-                <th className="px-6 py-3 font-medium text-gray-500">Floors</th>
-                <th className="px-6 py-3 font-medium text-gray-500">SVG</th>
-                <th className="px-6 py-3 font-medium text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {buildings.map((b) => (
-                <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="px-6 py-3 font-medium">
-                    <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700">
-                      {b.name}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-3 text-gray-500">
-                    {b.project.name} <span className="text-gray-400">({b.project.company.name})</span>
-                  </td>
-                  <td className="px-6 py-3">{b._count.floors}</td>
-                  <td className="px-6 py-3">
-                    {b.svgContent ? (
-                      <span className="badge badge-available">✓</span>
-                    ) : (
-                      <span className="badge badge-unavailable">—</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex gap-2">
-                      <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
-                        Edit
-                      </Link>
-                      <Form method="post" onSubmit={(e) => { if (!confirm("Delete this building?")) e.preventDefault(); }}>
-                        <input type="hidden" name="intent" value="delete" />
-                        <input type="hidden" name="id" value={b.id} />
-                        <button type="submit" className="text-red-600 hover:text-red-700 text-sm">Delete</button>
-                      </Form>
-                    </div>
-                  </td>
-                </tr>
+        (() => {
+          // Group buildings by project
+          const grouped = buildings.reduce<Record<string, { projectName: string; companyName: string; items: typeof buildings }>>((acc, b) => {
+            const key = b.project.name;
+            if (!acc[key]) {
+              acc[key] = { projectName: b.project.name, companyName: b.project.company.name, items: [] };
+            }
+            acc[key].items.push(b);
+            return acc;
+          }, {});
+
+          return (
+            <div className="space-y-6">
+              {Object.values(grouped).map((group) => (
+                <div key={group.projectName} className="card overflow-hidden">
+                  <div className="border-b border-gray-100 bg-gray-50 px-6 py-3">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      {group.projectName}
+                      <span className="ml-2 text-xs font-normal text-gray-400">({group.companyName})</span>
+                    </h3>
+                  </div>
+                  <table className="w-full text-sm table-fixed">
+                    <colgroup>
+                      <col className="w-[40%]" />
+                      <col className="w-[15%]" />
+                      <col className="w-[15%]" />
+                      <col className="w-[30%]" />
+                    </colgroup>
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-white text-left">
+                        <th className="px-6 py-3 font-medium text-gray-500">Name</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">Floors</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">SVG</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.items.map((b) => (
+                        <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
+                          <td className="px-6 py-3 font-medium">
+                            <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700">
+                              {b.name}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-3">{b._count.floors}</td>
+                          <td className="px-6 py-3">
+                            {b.svgContent ? (
+                              <span className="badge badge-available">✓</span>
+                            ) : (
+                              <span className="badge badge-unavailable">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3">
+                            <div className="flex gap-2">
+                              <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
+                                Edit
+                              </Link>
+                              <Form method="post" onSubmit={(e) => { if (!confirm("Delete this building?")) e.preventDefault(); }}>
+                                <input type="hidden" name="intent" value="delete" />
+                                <input type="hidden" name="id" value={b.id} />
+                                <button type="submit" className="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                              </Form>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          );
+        })()
       )}
     </div>
   );
