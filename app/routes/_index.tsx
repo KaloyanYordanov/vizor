@@ -1,5 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
 
 export const meta: MetaFunction = () => [
   { title: "Vizor — Interactive Apartment Selector Platform" },
@@ -7,6 +9,7 @@ export const meta: MetaFunction = () => [
 ];
 
 export default function IndexPage() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-full bg-gradient-to-br from-brand-50 via-white to-brand-50">
       {/* Nav */}
@@ -18,28 +21,30 @@ export default function IndexPage() {
             </div>
             <span className="text-xl font-bold text-gray-900">Vizor</span>
           </div>
-          <Link to="/login" className="btn-primary btn-sm">
-            Admin Login
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link to="/login" className="btn-primary btn-sm">
+              {t("landing.adminLogin")}
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Hero */}
       <section className="mx-auto max-w-7xl px-4 py-20 text-center">
         <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl">
-          Find Your{" "}
-          <span className="text-brand-600">Perfect Apartment</span>
+          {t("landing.heroTitleStart")}
+          <span className="text-brand-600">{t("landing.heroTitleHighlight")}</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-          Explore interactive floor plans, browse available apartments, and
-          discover your dream home with our innovative building visualisation platform.
+          {t("landing.heroDescription")}
         </p>
         <div className="mt-10 flex justify-center gap-4">
           <Link to="/login" className="btn-primary px-8 py-3 text-base">
-            Get Started
+            {t("landing.getStarted")}
           </Link>
           <a href="#features" className="btn-secondary px-8 py-3 text-base">
-            Learn More
+            {t("landing.learnMore")}
           </a>
         </div>
       </section>
@@ -49,18 +54,18 @@ export default function IndexPage() {
         <div className="grid gap-8 md:grid-cols-3">
           <FeatureCard
             icon="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-            title="Interactive Floor Plans"
-            description="Navigate buildings visually with SVG-powered floor plans. Hover to preview, click to explore."
+            title={t("landing.feature1Title")}
+            description={t("landing.feature1Desc")}
           />
           <FeatureCard
             icon="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            title="Smart Filtering"
-            description="Filter by rooms, price, and availability. Instantly see matching apartments highlighted on the plan."
+            title={t("landing.feature2Title")}
+            description={t("landing.feature2Desc")}
           />
           <FeatureCard
             icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-            title="Multi-Tenant Platform"
-            description="Support multiple construction companies, projects, and buildings from a single powerful admin panel."
+            title={t("landing.feature3Title")}
+            description={t("landing.feature3Desc")}
           />
         </div>
       </section>
@@ -68,7 +73,7 @@ export default function IndexPage() {
       {/* Footer */}
       <footer className="border-t border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-8 text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} Vizor. Interactive Apartment Selector Platform.
+          {t("landing.footer", { year: new Date().getFullYear() })}
         </div>
       </footer>
     </div>

@@ -1,5 +1,6 @@
 import { StatusBadge } from "./ui";
 import type { ApartmentStatus } from "@prisma/client";
+import { useTranslation } from "react-i18next";
 
 interface ApartmentDetailProps {
   apartment: {
@@ -17,12 +18,13 @@ interface ApartmentDetailProps {
 }
 
 export function ApartmentDetailPanel({ apartment, onClose }: ApartmentDetailProps) {
+  const { t } = useTranslation();
   const features = apartment.features ? JSON.parse(apartment.features) : {};
 
   return (
     <div className="card border-brand-200 shadow-lg animate-in">
       <div className="card-header flex items-center justify-between">
-        <h3 className="font-bold text-lg">Apartment {apartment.number}</h3>
+        <h3 className="font-bold text-lg">{t("apartment.apartment")} {apartment.number}</h3>
         <div className="flex items-center gap-2">
           <StatusBadge status={apartment.status as ApartmentStatus} />
           {onClose && (
@@ -40,22 +42,22 @@ export function ApartmentDetailPanel({ apartment, onClose }: ApartmentDetailProp
       <div className="card-body space-y-4">
         {/* Key metrics */}
         <div className="grid grid-cols-2 gap-3">
-          <InfoItem label="Rooms" value={String(apartment.rooms)} />
-          <InfoItem label="Area" value={`${apartment.area} m²`} />
+          <InfoItem label={t("apartment.rooms")} value={String(apartment.rooms)} />
+          <InfoItem label={t("apartment.area")} value={`${apartment.area} m²`} />
           <InfoItem
-            label="Price"
-            value={apartment.price ? `€${apartment.price.toLocaleString()}` : "On request"}
+            label={t("apartment.price")}
+            value={apartment.price ? `€${apartment.price.toLocaleString()}` : t("apartment.onRequest")}
           />
           <InfoItem
-            label="Price/m²"
-            value={apartment.pricePerSqm ? `€${apartment.pricePerSqm.toLocaleString()}` : "—"}
+            label={t("apartment.pricePerUnit", { unit: "m²" })}
+            value={apartment.pricePerSqm ? `€${apartment.pricePerSqm.toLocaleString()}` : t("apartment.noValue")}
           />
         </div>
 
         {/* Description */}
         {apartment.description && (
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1">Description</p>
+            <p className="text-xs font-medium text-gray-500 mb-1">{t("common.description")}</p>
             <p className="text-sm text-gray-700">{apartment.description}</p>
           </div>
         )}
@@ -63,7 +65,7 @@ export function ApartmentDetailPanel({ apartment, onClose }: ApartmentDetailProp
         {/* Features */}
         {Object.keys(features).length > 0 && (
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-2">Features</p>
+            <p className="text-xs font-medium text-gray-500 mb-2">{t("apartment.features")}</p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(features).map(([key, value]) =>
                 value ? (
@@ -85,17 +87,17 @@ export function ApartmentDetailPanel({ apartment, onClose }: ApartmentDetailProp
         {/* CTA */}
         {apartment.status === "AVAILABLE" && (
           <button className="btn-primary w-full mt-2">
-            Request Information
+            {t("apartment.requestInfo")}
           </button>
         )}
         {apartment.status === "RESERVED" && (
           <p className="text-center text-sm text-yellow-700 bg-yellow-50 rounded-lg py-2">
-            This apartment is currently reserved
+            {t("apartment.reservedMessage")}
           </p>
         )}
         {apartment.status === "SOLD" && (
           <p className="text-center text-sm text-red-700 bg-red-50 rounded-lg py-2">
-            This apartment has been sold
+            {t("apartment.soldMessage")}
           </p>
         )}
       </div>

@@ -1,8 +1,10 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData, useLocation } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 import { requireUser } from "~/lib/auth.server";
 import { prisma } from "~/lib/db.server";
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request);
@@ -25,14 +27,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const allNavItems = [
-  { to: "/admin", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", end: true },
-  { to: "/admin/companies", label: "Companies", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", roles: ["SUPER_ADMIN"] as string[] },
-  { to: "/admin/projects", label: "Projects", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
-  { to: "/admin/buildings", label: "Buildings", icon: "M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" },
+  { to: "/admin", label: "admin.dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", end: true },
+  { to: "/admin/companies", label: "admin.companies", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", roles: ["SUPER_ADMIN"] as string[] },
+  { to: "/admin/projects", label: "admin.projects", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
+  { to: "/admin/buildings", label: "admin.buildings", icon: "M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" },
 ];
 
 export default function AdminLayout() {
   const { user, projects } = useLoaderData<typeof loader>();
+  const { t } = useTranslation();
   const location = useLocation();
   const isProjectsActive = location.pathname.startsWith("/admin/projects") || location.pathname.startsWith("/admin/buildings");
 
@@ -71,7 +74,7 @@ export default function AdminLayout() {
                     <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                     </svg>
-                    {item.label}
+                    {t(item.label)}
                   </NavLink>
                   {isProjectsActive && (
                     <div className="ml-4 mt-1 space-y-0.5 border-l border-gray-200 pl-3">
@@ -85,7 +88,7 @@ export default function AdminLayout() {
                           }`
                         }
                       >
-                        All Buildings
+                        {t("admin.allBuildings")}
                       </NavLink>
                       {projects.map((project) => (
                         <div key={project.id}>
@@ -147,15 +150,16 @@ export default function AdminLayout() {
                 <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                 </svg>
-                {item.label}
+                {t(item.label)}
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-4 space-y-3">
+          <LanguageSwitcher className="w-full" />
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-brand-700">
                 {user.name.charAt(0)}
               </span>
@@ -167,7 +171,7 @@ export default function AdminLayout() {
             <Form method="post" action="/logout">
               <button
                 type="submit"
-                title="Sign out"
+                title={t("admin.signOut")}
                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -190,9 +194,10 @@ export default function AdminLayout() {
             <span className="text-lg font-bold">Vizor</span>
           </div>
           <div className="flex-1" />
-          <Form method="post" action="/logout">
+          <LanguageSwitcher />
+          <Form method="post" action="/logout" className="ml-1">
             <button type="submit" className="btn-secondary btn-sm">
-              Sign out
+              {t("admin.signOut")}
             </button>
           </Form>
         </header>
@@ -214,7 +219,7 @@ export default function AdminLayout() {
                 }`
               }
             >
-              {item.label}
+              {t(item.label)}
             </NavLink>
           ))}
         </nav>

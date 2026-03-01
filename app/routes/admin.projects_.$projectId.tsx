@@ -2,6 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remi
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import PreviewSettings from "~/routes/_components/ProjectSettingsPreview";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
@@ -106,19 +107,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function EditProjectPage() {
   const { project } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={project.name}
-        description={`${project.company.name} · ${project.buildings.length} building(s)`}
+        description={`${project.company.name} · ${t("projects.nBuildings", { n: project.buildings.length })}`}
       />
 
       {/* Edit form */}
       <div className="card max-w-2xl">
         <details>
           <summary className="card-header cursor-pointer select-none">
-            <span className="font-semibold text-sm">Project Details</span>
+            <span className="font-semibold text-sm">{t("projects.projectDetails")}</span>
           </summary>
           <div className="card-body">
             {actionData?.error && (
@@ -127,24 +129,24 @@ export default function EditProjectPage() {
             <Form method="post" className="space-y-4">
               <input type="hidden" name="intent" value="update" />
               <div>
-                <label className="label">Name</label>
+                <label className="label">{t("common.name")}</label>
                 <input name="name" className="input" defaultValue={project.name} required />
               </div>
               <div>
-                <label className="label">Slug</label>
+                <label className="label">{t("common.slug")}</label>
                 <input name="slug" className="input" defaultValue={project.slug} required />
               </div>
               <div>
-                <label className="label">Description</label>
+                <label className="label">{t("common.description")}</label>
                 <textarea name="description" className="input" rows={3} defaultValue={project.description || ""} />
               </div>
               <div>
-                <label className="label">Address</label>
+                <label className="label">{t("common.address")}</label>
                 <input name="address" className="input" defaultValue={project.address || ""} />
               </div>
               <div className="flex gap-3">
-                <button type="submit" className="btn-primary">Save</button>
-                <Link to="/admin/projects" className="btn-secondary">Back</Link>
+                <button type="submit" className="btn-primary">{t("common.save")}</button>
+                <Link to="/admin/projects" className="btn-secondary">{t("common.back")}</Link>
               </div>
             </Form>
           </div>
@@ -155,8 +157,8 @@ export default function EditProjectPage() {
       <div className="card max-w-2xl">
         <details>
           <summary className="card-header cursor-pointer select-none">
-            <span className="font-semibold text-sm">Display Settings</span>
-            <p className="text-xs text-gray-500 mt-0.5">Configure colors, currency, and tooltip style for the public viewer</p>
+            <span className="font-semibold text-sm">{t("projects.displaySettings")}</span>
+            <p className="text-xs text-gray-500 mt-0.5">{t("projects.displaySettingsDesc")}</p>
           </summary>
           <div className="card-body">
             {/* live preview + settings form */}
@@ -165,7 +167,7 @@ export default function EditProjectPage() {
 
               <PreviewSettings project={project} />
 
-              <button type="submit" className="btn-primary">Save Settings</button>
+              <button type="submit" className="btn-primary">{t("projects.saveSettings")}</button>
             </Form>
           </div>
         </details>
@@ -174,22 +176,22 @@ export default function EditProjectPage() {
       {/* Buildings list */}
       <div className="card">
         <div className="card-header flex items-center justify-between">
-          <h2 className="font-semibold">Buildings</h2>
+          <h2 className="font-semibold">{t("admin.buildings")}</h2>
           <Link to="/admin/buildings" className="btn-primary btn-sm">
-            Manage Buildings
+            {t("building.manageBuildings")}
           </Link>
         </div>
         {project.buildings.length === 0 ? (
-          <div className="card-body text-sm text-gray-500">No buildings yet.</div>
+          <div className="card-body text-sm text-gray-500">{t("projects.noBuildingsYet")}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                  <th className="px-6 py-3 font-medium text-gray-500">Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-500">Floors</th>
-                  <th className="px-6 py-3 font-medium text-gray-500">Has SVG</th>
-                  <th className="px-6 py-3 font-medium text-gray-500">Actions</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">{t("common.name")}</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">{t("floor.floors")}</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">{t("projects.hasSvg")}</th>
+                  <th className="px-6 py-3 font-medium text-gray-500">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,20 +205,20 @@ export default function EditProjectPage() {
                     <td className="px-6 py-3">{b._count.floors}</td>
                     <td className="px-6 py-3">
                       {b.svgContent ? (
-                        <span className="badge badge-available">Yes</span>
+                        <span className="badge badge-available">{t("common.yes")}</span>
                       ) : (
-                        <span className="badge badge-unavailable">No</span>
+                        <span className="badge badge-unavailable">{t("common.no")}</span>
                       )}
                     </td>
                     <td className="px-6 py-3">
                       <div className="flex gap-2">
                         <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
-                          Edit
+                          {t("common.edit")}
                         </Link>
-                        <Form method="post" onSubmit={(e) => { if (!confirm("Delete this building?")) e.preventDefault(); }}>
+                        <Form method="post" onSubmit={(e) => { if (!confirm(t("building.deleteBuilding"))) e.preventDefault(); }}>
                           <input type="hidden" name="intent" value="delete-building" />
                           <input type="hidden" name="buildingId" value={b.id} />
-                          <button type="submit" className="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                          <button type="submit" className="text-red-600 hover:text-red-700 text-sm">{t("common.delete")}</button>
                         </Form>
                       </div>
                     </td>

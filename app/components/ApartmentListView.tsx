@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { STATUS_UI } from "~/utils/colors";
 
 interface ApartmentData {
@@ -34,6 +35,7 @@ export function ApartmentListView({
   areaUnit = "m²",
   className = "",
 }: ApartmentListViewProps) {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortField, setSortField] = useState<SortField>("number");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -126,7 +128,7 @@ export function ApartmentListView({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-gray-700">
-            {filtered.length} of {apartments.length} apartments
+            {t("filter.nOfTotal", { n: filtered.length, total: apartments.length })}
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -137,7 +139,7 @@ export function ApartmentListView({
               className={`p-1.5 rounded-md transition-colors ${
                 viewMode === "grid" ? "bg-white shadow text-brand-700" : "text-gray-500"
               }`}
-              title="Grid view"
+              title={t("filter.gridView")}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -148,7 +150,7 @@ export function ApartmentListView({
               className={`p-1.5 rounded-md transition-colors ${
                 viewMode === "table" ? "bg-white shadow text-brand-700" : "text-gray-500"
               }`}
-              title="Table view"
+              title={t("filter.tableView")}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -156,7 +158,7 @@ export function ApartmentListView({
             </button>
           </div>
           <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700">
-            Clear filters
+            {t("filter.clearFilters")}
           </button>
         </div>
       </div>
@@ -165,7 +167,7 @@ export function ApartmentListView({
       <div className="flex flex-wrap items-end gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3">
         {/* Status filter */}
         <div>
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">Status</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">{t("status.status")}</label>
           <div className="flex gap-1.5">
             {Object.entries(statusConfig).map(([key, cfg]) => (
               <button
@@ -186,13 +188,13 @@ export function ApartmentListView({
 
         {/* Rooms */}
         <div className="min-w-[100px]">
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">Rooms</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">{t("filter.rooms")}</label>
           <select
             className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs"
             value={filterRooms ?? ""}
             onChange={(e) => setFilterRooms(e.target.value ? parseFloat(e.target.value) : null)}
           >
-            <option value="">All</option>
+            <option value="">{t("common.all")}</option>
             {roomOptions.map((r) => (
               <option key={r} value={r}>{r}</option>
             ))}
@@ -201,22 +203,22 @@ export function ApartmentListView({
 
         {/* Floor */}
         <div className="min-w-[90px]">
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">Floor</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">{t("floor.floor")}</label>
           <select
             className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs"
             value={filterFloor ?? ""}
             onChange={(e) => setFilterFloor(e.target.value ? parseInt(e.target.value) : null)}
           >
-            <option value="">All</option>
+            <option value="">{t("common.all")}</option>
             {floorOptions.map((f) => (
-              <option key={f} value={f}>Floor {f}</option>
+              <option key={f} value={f}>{t("floor.floorN", { n: f })}</option>
             ))}
           </select>
         </div>
 
         {/* Price range */}
         <div className="min-w-[100px]">
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">Min Price</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">{t("filter.minPrice")}</label>
           <input
             type="number"
             className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs"
@@ -226,7 +228,7 @@ export function ApartmentListView({
           />
         </div>
         <div className="min-w-[100px]">
-          <label className="text-xs font-medium text-gray-500 block mb-1.5">Max Price</label>
+          <label className="text-xs font-medium text-gray-500 block mb-1.5">{t("filter.maxPrice")}</label>
           <input
             type="number"
             className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs"
@@ -243,7 +245,7 @@ export function ApartmentListView({
           <svg className="h-12 w-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
-          <p className="text-sm">No apartments match your filters</p>
+          <p className="text-sm">{t("filter.noMatch")}</p>
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -258,10 +260,10 @@ export function ApartmentListView({
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-bold text-gray-900 group-hover:text-brand-700 transition-colors">
-                      Apt {apt.number}
+                      {t("apartment.apt")} {apt.number}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {apt.buildingName} · Floor {apt.floorNumber}
+                      {apt.buildingName} · {t("floor.floorN", { n: apt.floorNumber })}
                     </p>
                   </div>
                   <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.border} ${sc.text}`}>
@@ -271,15 +273,15 @@ export function ApartmentListView({
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">Rooms</p>
+                    <p className="text-xs text-gray-500">{t("apartment.rooms")}</p>
                     <p className="text-sm font-semibold">{apt.rooms}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">Area</p>
+                    <p className="text-xs text-gray-500">{t("apartment.area")}</p>
                     <p className="text-sm font-semibold">{apt.area}{areaUnit}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">Price</p>
+                    <p className="text-xs text-gray-500">{t("apartment.price")}</p>
                     <p className="text-sm font-semibold">
                       {apt.price ? `${currencySymbol}${(apt.price / 1000).toFixed(0)}k` : "—"}
                     </p>
@@ -298,32 +300,32 @@ export function ApartmentListView({
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("number")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Number <SortIcon field="number" />
+                      {t("common.number")} <SortIcon field="number" />
                     </button>
                   </th>
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("floor")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Floor <SortIcon field="floor" />
+                      {t("floor.floor")} <SortIcon field="floor" />
                     </button>
                   </th>
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("rooms")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Rooms <SortIcon field="rooms" />
+                      {t("apartment.rooms")} <SortIcon field="rooms" />
                     </button>
                   </th>
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("area")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Area <SortIcon field="area" />
+                      {t("apartment.area")} <SortIcon field="area" />
                     </button>
                   </th>
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("price")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Price <SortIcon field="price" />
+                      {t("apartment.price")} <SortIcon field="price" />
                     </button>
                   </th>
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("status")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
-                      Status <SortIcon field="status" />
+                      {t("status.status")} <SortIcon field="status" />
                     </button>
                   </th>
                 </tr>
@@ -337,7 +339,7 @@ export function ApartmentListView({
                       onClick={() => onApartmentClick?.(apt)}
                       className="border-b border-gray-50 hover:bg-brand-50/30 cursor-pointer transition-colors"
                     >
-                      <td className="px-4 py-2.5 font-medium text-gray-900">Apt {apt.number}</td>
+                      <td className="px-4 py-2.5 font-medium text-gray-900">{t("apartment.apt")} {apt.number}</td>
                       <td className="px-4 py-2.5 text-gray-500">{apt.floorNumber}</td>
                       <td className="px-4 py-2.5">{apt.rooms}</td>
                       <td className="px-4 py-2.5">{apt.area} {areaUnit}</td>

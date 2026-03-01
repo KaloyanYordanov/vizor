@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FilterBarProps {
   minRooms?: number;
@@ -15,6 +16,7 @@ export interface FilterValues {
 }
 
 export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFilterChange }: FilterBarProps) {
+  const { t } = useTranslation();
   const [rooms, setRooms] = useState<number | null>(null);
   const [priceMin, setPriceMin] = useState<number | null>(null);
   const [priceMax, setPriceMax] = useState<number | null>(null);
@@ -55,9 +57,9 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
   };
 
   const statusOptions = [
-    { value: "AVAILABLE", label: "Available", color: "bg-green-400" },
-    { value: "RESERVED", label: "Reserved", color: "bg-yellow-400" },
-    { value: "SOLD", label: "Sold", color: "bg-red-400" },
+    { value: "AVAILABLE", label: t("status.available"), color: "bg-green-400" },
+    { value: "RESERVED", label: t("status.reserved"), color: "bg-yellow-400" },
+    { value: "SOLD", label: t("status.sold"), color: "bg-red-400" },
   ];
 
   return (
@@ -66,18 +68,18 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
         <div className="flex flex-wrap items-end gap-4">
           {/* Rooms filter */}
           <div className="min-w-[120px]">
-            <label className="label">Rooms</label>
+            <label className="label">{t("filter.rooms")}</label>
             <select
               className="select"
               value={rooms ?? ""}
               onChange={(e) => handleRoomsChange(e.target.value)}
             >
-              <option value="">All</option>
+              <option value="">{t("common.all")}</option>
               {Array.from({ length: (maxRooms - minRooms) * 2 + 1 }, (_, i) => minRooms + i * 0.5)
                 .filter((v) => v <= maxRooms)
                 .map((v) => (
                   <option key={v} value={v}>
-                    {v} {v === 1 ? "room" : "rooms"}
+                    {v} {v === 1 ? t("apartment.room") : t("apartment.roomsPlural")}
                   </option>
                 ))}
             </select>
@@ -85,7 +87,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
 
           {/* Price range */}
           <div className="min-w-[130px]">
-            <label className="label">Min Price (€)</label>
+            <label className="label">{t("filter.minPriceCurrency", { currency: "€" })}</label>
             <input
               type="number"
               className="input"
@@ -95,11 +97,11 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
             />
           </div>
           <div className="min-w-[130px]">
-            <label className="label">Max Price (€)</label>
+            <label className="label">{t("filter.maxPriceCurrency", { currency: "€" })}</label>
             <input
               type="number"
               className="input"
-              placeholder="Any"
+              placeholder={t("filter.any")}
               value={priceMax ?? ""}
               onChange={(e) => handlePriceMaxChange(e.target.value)}
             />
@@ -107,7 +109,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
 
           {/* Status toggles */}
           <div>
-            <label className="label">Status</label>
+            <label className="label">{t("status.status")}</label>
             <div className="flex gap-2">
               {statusOptions.map((opt) => (
                 <button
@@ -133,7 +135,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
             onClick={clearFilters}
             className="text-sm text-gray-500 hover:text-gray-700 underline"
           >
-            Clear filters
+            {t("filter.clearFilters")}
           </button>
         </div>
       </div>

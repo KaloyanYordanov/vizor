@@ -7,12 +7,18 @@
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { I18nextProvider } from "react-i18next";
+import initI18nClient from "./i18n/i18n.client";
 
-startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <RemixBrowser />
-    </StrictMode>
-  );
+initI18nClient().then((i18n) => {
+  startTransition(() => {
+    hydrateRoot(
+      document,
+      <StrictMode>
+        <I18nextProvider i18n={i18n}>
+          <RemixBrowser />
+        </I18nextProvider>
+      </StrictMode>
+    );
+  });
 });

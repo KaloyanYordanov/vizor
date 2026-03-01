@@ -9,6 +9,8 @@ import { ApartmentModal } from "~/components/ApartmentModal";
 import { ApartmentListView } from "~/components/ApartmentListView";
 import { FilterBar, type FilterValues } from "~/components/FilterBar";
 import { DEFAULT_VIEWER_COLORS } from "~/utils/colors";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => [
   { title: data ? `${data.project.name} | Vizor` : "Project | Vizor" },
@@ -50,6 +52,7 @@ type ViewTab = "interactive" | "list";
 
 export default function ProjectViewer() {
   const { project, baseUrl } = useLoaderData<typeof loader>();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedBuildingIdx, setSelectedBuildingIdx] = useState(0);
   const [selectedFloorNumber, setSelectedFloorNumber] = useState<number | null>(null);
@@ -184,7 +187,7 @@ export default function ProjectViewer() {
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
-                Floor Plans
+                {t("viewer.floorPlans")}
               </button>
               <button
                 onClick={() => setViewTab("list")}
@@ -197,9 +200,11 @@ export default function ProjectViewer() {
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
-                All Apartments
+                {t("viewer.allApartments")}
               </button>
             </div>
+
+            <LanguageSwitcher />
 
             {/* Building selector */}
             {project.buildings.length > 1 && (
@@ -270,13 +275,13 @@ export default function ProjectViewer() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {building?.name || "Building"}
+                  {building?.name || t("building.building")}
                 </button>
                 {selectedFloorNumber && (
                   <>
                     <span className="text-gray-300">›</span>
                     <span className="font-medium text-brand-600">
-                      Floor {selectedFloorNumber}
+                      {t("floor.floorN", { n: selectedFloorNumber })}
                       {selectedFloor?.label && ` (${selectedFloor.label})`}
                     </span>
                   </>
@@ -315,8 +320,8 @@ export default function ProjectViewer() {
                   <div className="flex items-center justify-center h-64 text-gray-400 p-4">
                     <p>
                       {!selectedFloorNumber
-                        ? "No building visualization available. Select a floor below."
-                        : "No floor plan available for this floor."}
+                        ? t("viewer.noBuildingVisualization")
+                        : t("floor.noFloorPlan")}
                     </p>
                   </div>
                 )}
@@ -326,7 +331,7 @@ export default function ProjectViewer() {
               {!selectedFloorNumber && building && (
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="text-sm font-semibold">Select a Floor</h3>
+                    <h3 className="text-sm font-semibold">{t("floor.selectFloor")}</h3>
                   </div>
                   <div className="card-body">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -342,16 +347,16 @@ export default function ProjectViewer() {
                               onClick={() => handleFloorClick(floor.number)}
                               className="rounded-lg border border-gray-200 p-3 text-center hover:border-brand-300 hover:bg-brand-50 transition-colors"
                             >
-                              <p className="text-sm font-semibold">Floor {floor.number}</p>
+                              <p className="text-sm font-semibold">{t("floor.floorN", { n: floor.number })}</p>
                               {floor.label && (
                                 <p className="text-xs text-gray-400">{floor.label}</p>
                               )}
                               <p className="text-xs text-green-600 mt-1">
-                                {available}/{floor.apartments.length} available
+                                {t("floor.nOfTotalAvailable", { n: available, total: floor.apartments.length })}
                               </p>
                               {hasMap && (
                                 <span className="inline-block mt-1 text-[10px] text-brand-600 bg-brand-50 rounded px-1.5 py-0.5">
-                                  Interactive
+                                  {t("floor.interactive")}
                                 </span>
                               )}
                             </button>
@@ -370,10 +375,10 @@ export default function ProjectViewer() {
                 <div className="card">
                   <div className="card-header">
                     <h3 className="text-sm font-semibold">
-                      Apartments on Floor {selectedFloor.number}
+                      {t("viewer.apartmentsOnFloor", { n: selectedFloor.number })}
                     </h3>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {filteredApartments.length} of {selectedFloor.apartments.length} shown
+                      {t("filter.nOfTotalShown", { n: filteredApartments.length, total: selectedFloor.apartments.length })}
                     </p>
                   </div>
                   <div className="divide-y divide-gray-50 max-h-[500px] overflow-y-auto">
@@ -391,9 +396,9 @@ export default function ProjectViewer() {
                           }`}
                         >
                           <div>
-                            <p className="text-sm font-medium">Apt {apt.number}</p>
+                            <p className="text-sm font-medium">{t("apartment.apt")} {apt.number}</p>
                             <p className="text-xs text-gray-500">
-                              {apt.rooms} rooms · {apt.area}{areaUnit}
+                              {apt.rooms}{t("viewer.roomsSeparator")}{apt.area}{areaUnit}
                             </p>
                           </div>
                           <div className="text-right">
@@ -409,7 +414,7 @@ export default function ProjectViewer() {
                     })}
                     {filteredApartments.length === 0 && (
                       <p className="px-4 py-8 text-center text-sm text-gray-400">
-                        No apartments match your filters
+                        {t("filter.noMatch")}
                       </p>
                     )}
                   </div>
@@ -425,17 +430,17 @@ export default function ProjectViewer() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-gray-50 p-3 text-center">
                         <p className="text-2xl font-bold text-brand-600">{building?.floors.length}</p>
-                        <p className="text-xs text-gray-500">Floors</p>
+                        <p className="text-xs text-gray-500">{t("floor.floors")}</p>
                       </div>
                       <div className="rounded-lg bg-gray-50 p-3 text-center">
                         <p className="text-2xl font-bold text-brand-600">{allApartments.length}</p>
-                        <p className="text-xs text-gray-500">Apartments</p>
+                        <p className="text-xs text-gray-500">{t("apartment.apartments")}</p>
                       </div>
                       <div className="rounded-lg bg-green-50 p-3 text-center">
                         <p className="text-2xl font-bold text-green-600">
                           {allApartments.filter((a: any) => a.status === "AVAILABLE").length}
                         </p>
-                        <p className="text-xs text-gray-500">Available</p>
+                        <p className="text-xs text-gray-500">{t("status.available")}</p>
                       </div>
                       <div className="rounded-lg bg-gray-50 p-3 text-center">
                         <p className="text-2xl font-bold text-gray-600">
@@ -445,7 +450,7 @@ export default function ProjectViewer() {
                               ).toLocaleString()}`
                             : "—"}
                         </p>
-                        <p className="text-xs text-gray-500">Starting from</p>
+                        <p className="text-xs text-gray-500">{t("viewer.startingFrom")}</p>
                       </div>
                     </div>
                   </div>
@@ -455,13 +460,13 @@ export default function ProjectViewer() {
               {/* Legend */}
               <div className="card">
                 <div className="card-body">
-                  <p className="text-xs font-medium text-gray-500 mb-2">Legend</p>
+                  <p className="text-xs font-medium text-gray-500 mb-2">{t("viewer.legend")}</p>
                   <div className="flex flex-wrap gap-3">
                     {[
-                      { status: "Available", color: project.availableColor },
-                      { status: "Reserved", color: project.reservedColor },
-                      { status: "Sold", color: project.soldColor },
-                      { status: "Unavailable", color: project.unavailableColor },
+                      { status: t("status.available"), color: project.availableColor },
+                      { status: t("status.reserved"), color: project.reservedColor },
+                      { status: t("status.sold"), color: project.soldColor },
+                      { status: t("status.unavailable"), color: project.unavailableColor },
                     ].map((item) => (
                       <div key={item.status} className="flex items-center gap-1.5 text-xs text-gray-600">
                         <span
@@ -490,7 +495,7 @@ export default function ProjectViewer() {
           onClose={handleCloseModal}
           onRequestSubmit={(data) => {
             console.log("Request submitted:", data);
-            alert("Thank you! Your request has been submitted.");
+            alert(t("viewer.thankYouRequest"));
             handleCloseModal();
           }}
         />

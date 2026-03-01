@@ -2,6 +2,8 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remi
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { getUser, login, createUserSession } from "~/lib/auth.server";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "~/components/LanguageSwitcher";
 
 export const meta: MetaFunction = () => [{ title: "Login | Vizor" }];
 
@@ -32,6 +34,7 @@ export default function LoginPage() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+  const { t } = useTranslation();
 
   return (
     <div className="flex min-h-full items-center justify-center px-4 py-12">
@@ -41,13 +44,13 @@ export default function LoginPage() {
             Vizor
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Interactive Apartment Selector Platform
+            {t("login.subtitle")}
           </p>
         </div>
 
         <div className="card">
           <div className="card-body space-y-6">
-            <h2 className="text-xl font-semibold text-center">Sign in</h2>
+            <h2 className="text-xl font-semibold text-center">{t("login.signIn")}</h2>
 
             {actionData?.error && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
@@ -58,7 +61,7 @@ export default function LoginPage() {
             <Form method="post" className="space-y-4">
               <div>
                 <label htmlFor="email" className="label">
-                  Email
+                  {t("login.email")}
                 </label>
                 <input
                   id="email"
@@ -67,13 +70,13 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   className="input"
-                  placeholder="admin@vizor.dev"
+                  placeholder={t("login.emailPlaceholder")}
                 />
               </div>
 
               <div>
                 <label htmlFor="password" className="label">
-                  Password
+                  {t("login.password")}
                 </label>
                 <input
                   id="password"
@@ -82,7 +85,7 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   className="input"
-                  placeholder="••••••••"
+                  placeholder={t("login.passwordPlaceholder")}
                 />
               </div>
 
@@ -91,15 +94,19 @@ export default function LoginPage() {
                 disabled={isSubmitting}
                 className="btn-primary w-full"
               >
-                {isSubmitting ? "Signing in..." : "Sign in"}
+                {isSubmitting ? t("login.signingIn") : t("login.signIn")}
               </button>
             </Form>
           </div>
         </div>
 
         <p className="text-center text-xs text-gray-400">
-          Demo: admin@vizor.dev / password123
+          {t("login.demo")}
         </p>
+
+        <div className="text-center">
+          <LanguageSwitcher />
+        </div>
       </div>
     </div>
   );

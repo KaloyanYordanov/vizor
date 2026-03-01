@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from "react";
 import type { ApartmentStatus } from "@prisma/client";
 import { STATUS_UI } from "~/utils/colors";
+import { useTranslation } from "react-i18next";
 
 interface ApartmentModalProps {
   apartment: {
@@ -39,6 +40,7 @@ export function ApartmentModal({
 }: ApartmentModalProps) {
   const features = apartment.features ? JSON.parse(apartment.features) : {};
   const sc = statusConfig[apartment.status] || statusConfig.UNAVAILABLE;
+  const { t } = useTranslation();
 
   // Close on Escape
   useEffect(() => {
@@ -91,7 +93,7 @@ export function ApartmentModal({
         {/* Header */}
         <div className={`sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b ${sc.border} ${sc.bg}`}>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Apartment {apartment.number}</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t("apartment.apartment")} {apartment.number}</h2>
             <span className={`inline-block mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${sc.bg} ${sc.text} border ${sc.border}`}>
               {sc.label}
             </span>
@@ -110,23 +112,23 @@ export function ApartmentModal({
           {/* Key metrics grid */}
           <div className="grid grid-cols-2 gap-3">
             <MetricCard
-              label="Rooms"
+              label={t("apartment.rooms")}
               value={String(apartment.rooms)}
               icon="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             />
             <MetricCard
-              label="Area"
+              label={t("apartment.area")}
               value={`${apartment.area} ${areaUnit}`}
               icon="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
             />
             <MetricCard
-              label="Price"
-              value={apartment.price ? `${currencySymbol}${apartment.price.toLocaleString()}` : "On request"}
+              label={t("apartment.price")}
+              value={apartment.price ? `${currencySymbol}${apartment.price.toLocaleString()}` : t("apartment.onRequest")}
               icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               highlight
             />
             <MetricCard
-              label={`Price/${areaUnit}`}
+              label={t("apartment.pricePerUnit", { unit: areaUnit })}
               value={apartment.pricePerSqm ? `${currencySymbol}${apartment.pricePerSqm.toLocaleString()}` : "—"}
               icon="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
             />
@@ -135,11 +137,11 @@ export function ApartmentModal({
           {/* Apartment floor plan image */}
           {apartment.floorPlanUrl && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Floor Plan</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t("apartment.floorPlan")}</h3>
               <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
                 <img
                   src={apartment.floorPlanUrl}
-                  alt={`Floor plan for Apt ${apartment.number}`}
+                  alt={t("apartment.floorPlanForApt", { number: apartment.number })}
                   className="w-full h-auto"
                 />
               </div>
@@ -149,7 +151,7 @@ export function ApartmentModal({
           {/* Description */}
           {apartment.description && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Description</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{t("common.description")}</h3>
               <p className="text-sm text-gray-700 leading-relaxed">{apartment.description}</p>
             </div>
           )}
@@ -157,7 +159,7 @@ export function ApartmentModal({
           {/* Features */}
           {Object.keys(features).length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Features</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t("apartment.features")}</h3>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(features).map(([key, value]) =>
                   value ? (
@@ -199,14 +201,14 @@ export function ApartmentModal({
           {/* Request callback form */}
           {showRequestForm && apartment.status === "AVAILABLE" && onRequestSubmit && (
             <div className="border-t border-gray-100 pt-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Request Information</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("apartment.requestInfo")}</h3>
               <form onSubmit={handleFormSubmit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <input name="name" placeholder="Your name" required className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
-                  <input name="email" type="email" placeholder="Email" required className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
+                  <input name="name" placeholder={t("apartment.yourName")} required className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
+                  <input name="email" type="email" placeholder={t("apartment.email")} required className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
                 </div>
-                <input name="phone" type="tel" placeholder="Phone number" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
-                <textarea name="message" rows={2} placeholder="Message (optional)" className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none" />
+                <input name="phone" type="tel" placeholder={t("apartment.phone")} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
+                <textarea name="message" rows={2} placeholder={t("apartment.messageOptional")} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none" />
                 <button type="submit" className="w-full bg-brand-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-brand-700 transition-colors">
                   Send Request
                 </button>
@@ -217,13 +219,13 @@ export function ApartmentModal({
           {/* Status messages for non-available */}
           {apartment.status === "RESERVED" && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl py-3 px-4 text-center">
-              <p className="text-sm font-medium text-yellow-800">This apartment is currently reserved</p>
-              <p className="text-xs text-yellow-600 mt-0.5">Contact us for availability updates</p>
+              <p className="text-sm font-medium text-yellow-800">{t("apartment.reservedMessage")}</p>
+              <p className="text-xs text-yellow-600 mt-0.5">{t("apartment.contactForUpdates")}</p>
             </div>
           )}
           {apartment.status === "SOLD" && (
             <div className="bg-red-50 border border-red-200 rounded-xl py-3 px-4 text-center">
-              <p className="text-sm font-medium text-red-800">This apartment has been sold</p>
+              <p className="text-sm font-medium text-red-800">{t("apartment.soldMessage")}</p>
             </div>
           )}
         </div>

@@ -15,6 +15,7 @@ An interactive apartment selector platform built with **Node 24 + Remix + Prisma
 - **Embeddable widget** — `<script>` tag or `<iframe>` to embed the viewer on any website
 - **Public REST API** — JSON endpoints with CORS for headless integrations
 - **Responsive design** — Mobile-first with desktop sidebar layout
+- **Internationalisation (i18n)** — Multi-language support with Bulgarian 🇧🇬 as default and English 🇬🇧; language switcher on all pages
 
 ### Tech Stack
 | Layer | Technology |
@@ -26,6 +27,7 @@ An interactive apartment selector platform built with **Node 24 + Remix + Prisma
 | Styling | Tailwind CSS 3 |
 | Auth | Cookie sessions + bcrypt |
 | Floor Plans | SVG with interactive regions |
+| i18n | i18next + react-i18next |
 | Testing | Vitest |
 
 ## Quick Start
@@ -91,6 +93,12 @@ app/
 │   ├── api.projects.$companySlug.$projectSlug.tsx  # REST API
 │   └── api.apartments.$apartmentId.tsx             # REST API
 ├── __tests__/            # Test files
+├── i18n/                 # Internationalisation
+│   ├── config.ts         # Supported languages, resources
+│   ├── i18n.client.ts    # Client-side i18n init
+│   ├── i18n.server.ts    # Server-side i18n factory
+│   ├── bg.json           # 🇧🇬 Bulgarian translations (default)
+│   └── en.json           # 🇬🇧 English translations
 ├── entry.client.tsx
 ├── entry.server.tsx
 ├── root.tsx
@@ -164,6 +172,52 @@ Returns detailed apartment info with floor/building/project context.
 
 Both endpoints return JSON with `Access-Control-Allow-Origin: *`.
 
+## Internationalisation (i18n)
+
+The app uses [i18next](https://www.i18next.com/) with [react-i18next](https://react.i18next.com/) for full internationalisation support. Bulgarian 🇧🇬 is the default language.
+
+### Supported Languages
+
+| Code | Language | Status |
+|------|----------|--------|
+| `bg` | Български (Bulgarian) | ✅ Default |
+| `en` | English | ✅ Available |
+
+### Architecture
+
+- **Bundled translations** — All translations are imported at build time (no HTTP fetching), ensuring instant language switching and SSR compatibility.
+- **Client-side language detection** — Uses `i18next-browser-languagedetector` to detect preference from `localStorage` or browser `navigator.language`.
+- **Server-side rendering** — A separate i18n instance is created per request via `i18n.server.ts` to avoid state leaking between requests.
+- **Language switcher** — A dropdown component (`LanguageSwitcher.tsx`) is available on the landing page, login page, admin layout, and public viewer.
+
+### Translation Files
+
+Translations live in `app/i18n/`:
+
+```
+app/i18n/
+├── config.ts        # Supported languages, resource imports
+├── i18n.client.ts   # Client init (with language detector)
+├── i18n.server.ts   # Server init (per-request instance)
+├── bg.json          # Bulgarian translations (~250 keys)
+└── en.json          # English translations (~250 keys)
+```
+
+Keys are organised by namespace: `common.*`, `status.*`, `apartment.*`, `building.*`, `floor.*`, `filter.*`, `admin.*`, `dashboard.*`, `companies.*`, `projects.*`, `settings.*`, `login.*`, `landing.*`, `viewer.*`, `polygon.*`, `upload.*`, `editApartment.*`, `editBuilding.*`, `zoom.*`.
+
+### Adding a New Language
+
+1. Copy `app/i18n/en.json` to `app/i18n/<code>.json` (e.g. `de.json` for German)
+2. Translate all values in the new file
+3. Update `app/i18n/config.ts`:
+   ```ts
+   import de from "./de.json";
+   export const supportedLngs = ["bg", "en", "de"] as const;
+   export const languageNames = { bg: "Български", en: "English", de: "Deutsch" };
+   export const i18nResources = { bg: { translation: bg }, en: { translation: en }, de: { translation: de } };
+   ```
+4. The language will appear automatically in all `LanguageSwitcher` dropdowns.
+
 ## Testing Plan
 
 ### Unit Tests (Vitest)
@@ -232,7 +286,7 @@ npm test
 - **Comparison mode** — Compare 2-3 apartments side by side
 - **Favorites** — Let public users bookmark apartments (localStorage)
 - **Print/PDF** — Generate apartment specification sheets
-- **Multi-language** — i18n support for property descriptions
+- **Additional languages** — Add more languages beyond Bulgarian and English
 
 ### Medium-term
 - **3D building view** — Three.js integration for 3D building visualization

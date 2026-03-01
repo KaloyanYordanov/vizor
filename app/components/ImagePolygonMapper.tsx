@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useFetcher } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 import { PolygonEditor, type DrawnPolygon } from "~/components/PolygonEditor";
 
 interface LinkableItem {
@@ -54,6 +55,7 @@ export function ImagePolygonMapper({
   const polygonFetcher = useFetcher();
   const [isUploading, setIsUploading] = useState(false);
   const [polygons, setPolygons] = useState<DrawnPolygon[]>(initialPolygons);
+  const { t } = useTranslation();
 
   const handleImageUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +105,7 @@ export function ImagePolygonMapper({
       {/* Upload control */}
       <div className="flex items-center gap-3">
         <label className="btn-secondary btn-sm cursor-pointer relative">
-          {isUploading ? "Uploading..." : uploadLabel}
+          {isUploading ? t("upload.uploading") : uploadLabel}
           <input
             type="file"
             accept={accept}
@@ -136,7 +138,7 @@ export function ImagePolygonMapper({
               className="btn-primary btn-sm"
               disabled={isPolygonSaving}
             >
-              {isPolygonSaving ? "Saving..." : `Save ${itemLabel} Polygon Mappings`}
+              {isPolygonSaving ? t("upload.saving") : t("upload.savePolygonMappings", { label: itemLabel })}
             </button>
             {polygonResult && !isPolygonSaving && (
               <span
@@ -144,7 +146,7 @@ export function ImagePolygonMapper({
                   polygonResult.error ? "text-red-600" : "text-green-600"
                 }`}
               >
-                {polygonResult.error || polygonResult.message || "Saved!"}
+                {polygonResult.error || polygonResult.message || t("upload.saved")}
               </span>
             )}
           </div>

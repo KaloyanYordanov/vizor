@@ -1,6 +1,8 @@
 import type { ApartmentStatus } from "@prisma/client";
+import { useTranslation } from "react-i18next";
 
 export function StatusBadge({ status }: { status: ApartmentStatus }) {
+  const { t } = useTranslation();
   const cls = {
     AVAILABLE: "badge-available",
     RESERVED: "badge-reserved",
@@ -8,9 +10,16 @@ export function StatusBadge({ status }: { status: ApartmentStatus }) {
     UNAVAILABLE: "badge-unavailable",
   }[status];
 
+  const statusLabels: Record<string, string> = {
+    AVAILABLE: t("status.available"),
+    RESERVED: t("status.reserved"),
+    SOLD: t("status.sold"),
+    UNAVAILABLE: t("status.unavailable"),
+  };
+
   return (
     <span className={`badge ${cls}`}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {statusLabels[status] || status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
 }
@@ -91,13 +100,14 @@ export function ConfirmDialog({
   title,
   message,
   action,
-  actionLabel = "Delete",
+  actionLabel,
 }: {
   title: string;
   message: string;
   action: string;
   actionLabel?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg border border-red-200 bg-red-50 p-4">
       <h3 className="text-sm font-medium text-red-800">{title}</h3>
@@ -105,7 +115,7 @@ export function ConfirmDialog({
       <form method="post" action={action} className="mt-3">
         <input type="hidden" name="intent" value="delete" />
         <button type="submit" className="btn-danger btn-sm">
-          {actionLabel}
+          {actionLabel || t("common.delete")}
         </button>
       </form>
     </div>

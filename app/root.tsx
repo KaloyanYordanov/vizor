@@ -8,6 +8,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { useTranslation } from "react-i18next";
 import stylesheet from "~/tailwind.css?url";
 
 export const links: LinksFunction = () => [
@@ -26,8 +27,10 @@ export const links: LinksFunction = () => [
 ];
 
 export default function App() {
+  const { i18n } = useTranslation();
+
   return (
-    <html lang="en" className="h-full">
+    <html lang={i18n.language} className="h-full">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -45,9 +48,10 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const { t, i18n } = useTranslation();
 
   return (
-    <html lang="en" className="h-full">
+    <html lang={i18n.language} className="h-full">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -64,11 +68,11 @@ export function ErrorBoundary() {
           ) : (
             <>
               <h1 className="text-6xl font-bold text-gray-300">500</h1>
-              <p className="mt-4 text-xl text-gray-600">Something went wrong</p>
+              <p className="mt-4 text-xl text-gray-600">{t("common.somethingWentWrong")}</p>
             </>
           )}
           <a href="/" className="mt-6 inline-block btn-primary">
-            Go Home
+            {t("common.goHome")}
           </a>
         </div>
         <Scripts />

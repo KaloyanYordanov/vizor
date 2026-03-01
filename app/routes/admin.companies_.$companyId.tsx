@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 import { prisma } from "~/lib/db.server";
 import { requireRole } from "~/lib/auth.server";
 import { PageHeader } from "~/components/ui";
@@ -42,12 +43,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function EditCompanyPage() {
+  const { t } = useTranslation();
   const { company } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`Edit: ${company.name}`} />
+      <PageHeader title={`${t("companies.editCompany")}: ${company.name}`} />
 
       <div className="card max-w-2xl">
         <div className="card-body">
@@ -58,20 +60,20 @@ export default function EditCompanyPage() {
           )}
           <Form method="post" className="space-y-4">
             <div>
-              <label className="label">Name</label>
+              <label className="label">{t("common.name")}</label>
               <input name="name" className="input" defaultValue={company.name} required />
             </div>
             <div>
-              <label className="label">Slug</label>
+              <label className="label">{t("common.slug")}</label>
               <input name="slug" className="input" defaultValue={company.slug} required />
             </div>
             <div>
-              <label className="label">Website</label>
+              <label className="label">{t("common.website")}</label>
               <input name="website" className="input" defaultValue={company.website || ""} />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="btn-primary">Save Changes</button>
-              <Link to="/admin/companies" className="btn-secondary">Cancel</Link>
+              <button type="submit" className="btn-primary">{t("common.saveChanges")}</button>
+              <Link to="/admin/companies" className="btn-secondary">{t("common.cancel")}</Link>
             </div>
           </Form>
         </div>

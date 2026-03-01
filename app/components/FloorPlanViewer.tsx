@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ensureRgba, STATUS_HEX } from "~/utils/colors";
 
 interface ApartmentData {
@@ -42,6 +43,7 @@ export function FloorPlanViewer({
     y: number;
     apartment: ApartmentData | null;
   }>({ visible: false, x: 0, y: 0, apartment: null });
+  const { t } = useTranslation();
 
   const statusColors: Record<string, { fill: string; stroke: string }> = {
     AVAILABLE: { fill: ensureRgba(STATUS_HEX.AVAILABLE, 0.15), stroke: STATUS_HEX.AVAILABLE },
@@ -167,9 +169,9 @@ export function FloorPlanViewer({
           }}
         >
           <div className="bg-gray-900 text-white rounded-lg px-3 py-2 shadow-xl text-sm whitespace-nowrap">
-            <p className="font-semibold">Apt {tooltip.apartment.number}</p>
+            <p className="font-semibold">{t("apartment.apt")} {tooltip.apartment.number}</p>
             <p className="text-gray-300 text-xs">
-              {tooltip.apartment.rooms} rooms · {tooltip.apartment.area}m²
+              {tooltip.apartment.rooms}{t("viewer.roomsSeparator")}{tooltip.apartment.area}m²
               {tooltip.apartment.price && ` · €${tooltip.apartment.price.toLocaleString()}`}
             </p>
             <p className="text-xs mt-0.5">

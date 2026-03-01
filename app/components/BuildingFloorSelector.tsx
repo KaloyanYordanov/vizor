@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ensureRgba, STATUS_HEX } from "~/utils/colors";
 
 interface FloorPolygon {
@@ -37,6 +38,7 @@ export function BuildingFloorSelector({
 }: BuildingFloorSelectorProps) {
   const [hoveredFloorId, setHoveredFloorId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const floorMap = useMemo(() => {
     const map = new Map<string, (typeof floors)[0]>();
@@ -73,7 +75,7 @@ export function BuildingFloorSelector({
     <div ref={containerRef} className="relative w-full">
       <img
         src={imageUrl}
-        alt="Building"
+        alt={t("building.building")}
         className="w-full h-auto block rounded-lg"
         draggable={false}
       />
@@ -104,9 +106,9 @@ export function BuildingFloorSelector({
                 onMouseLeave={() => setHoveredFloorId(null)}
               />
               {floor && (() => {
-                const label = floor.label || `Floor ${floor.number}`;
+                const label = floor.label || t("floor.floorN", { n: floor.number });
                 const availCount = floor.apartments.filter((a) => a.status === "AVAILABLE").length;
-                const subLabel = `${availCount} available`;
+                const subLabel = t("floor.nAvailable", { n: availCount });
                 const charW = 1.4;
                 const pad = 2;
                 const rectW = Math.max(label.length * charW, subLabel.length * charW * 0.72) + pad * 2;

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { ensureRgba, STATUS_HEX } from "~/utils/colors";
+import { useTranslation } from "react-i18next";
 
 /**
  * A single polygon: array of {x, y} points (0-1 normalized coordinates).
@@ -56,6 +57,7 @@ export function PolygonEditor({
   },
   className = "",
 }: PolygonEditorProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [mode, setMode] = useState<EditorMode>("select");
@@ -273,10 +275,10 @@ export function PolygonEditor({
         <div className="flex bg-gray-100 rounded-lg p-0.5">
           {(
             [
-              { m: "select", label: "Select", icon: "M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" },
-              { m: "draw", label: "Draw", icon: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" },
-              { m: "edit", label: "Edit", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
-            ] as const
+              { m: "select" as EditorMode, label: t("polygon.select"), icon: "M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" },
+              { m: "draw" as EditorMode, label: t("polygon.draw"), icon: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" },
+              { m: "edit" as EditorMode, label: t("polygon.editMode"), icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
+            ]
           ).map(({ m, label, icon }) => (
             <button
               key={m}
@@ -306,7 +308,7 @@ export function PolygonEditor({
           <button
             onClick={() => setZoom((z) => Math.max(z / 1.2, 0.5))}
             className="p-1.5 rounded text-gray-500 hover:bg-gray-100"
-            title="Zoom out (Ctrl+-)"
+            title={t("polygon.zoomOut")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
@@ -316,7 +318,7 @@ export function PolygonEditor({
           <button
             onClick={() => setZoom((z) => Math.min(z * 1.2, 5))}
             className="p-1.5 rounded text-gray-500 hover:bg-gray-100"
-            title="Zoom in (Ctrl++)"
+            title={t("polygon.zoomIn")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -328,9 +330,9 @@ export function PolygonEditor({
               setPan({ x: 0, y: 0 });
             }}
             className="p-1.5 rounded text-gray-500 hover:bg-gray-100 text-xs"
-            title="Reset view (Ctrl+0)"
+            title={t("polygon.resetView")}
           >
-            Reset
+            {t("polygon.reset")}
           </button>
         </div>
       </div>
@@ -338,16 +340,12 @@ export function PolygonEditor({
       {/* Instructions */}
       <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
         {mode === "draw" && (
-          <span>
-            Click to place polygon vertices. Click the <span className="text-red-500 font-medium">first point</span> to close.
-            Press <kbd className="px-1 bg-gray-200 rounded">Esc</kbd> to cancel.
-          </span>
+          <span>{t("polygon.drawInstructions")}</span>
         )}
-        {mode === "select" && <span>Click a polygon to select it. Press <kbd className="px-1 bg-gray-200 rounded">Delete</kbd> to remove.</span>}
-        {mode === "edit" && <span>Drag polygon vertices to reposition them. Hold <kbd className="px-1 bg-gray-200 rounded">Space</kbd> + drag to pan.</span>}
+        {mode === "select" && <span>{t("polygon.selectInstructions")}</span>}
+        {mode === "edit" && <span>{t("polygon.editInstructions")}</span>}
         <span className="ml-2 text-gray-400">
-          Scroll or <kbd className="px-1 bg-gray-200 rounded">Ctrl+/-</kbd> to zoom.
-          <kbd className="px-1 bg-gray-200 rounded ml-1">Space</kbd> + drag to pan.
+          {t("polygon.commonInstructions")}
         </span>
       </div>
 
@@ -371,7 +369,7 @@ export function PolygonEditor({
           {/* Background image */}
           <img
             src={imageUrl}
-            alt="Floor plan"
+            alt={t("apartment.floorPlan")}
             className="block w-full h-auto select-none"
             draggable={false}
             onDragStart={(e) => e.preventDefault()}
@@ -501,9 +499,9 @@ export function PolygonEditor({
         <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">
-              Polygon #{selectedPolygonIdx + 1}
+              {t("polygon.polygonN", { n: selectedPolygonIdx + 1 })}
               {selectedApt && (
-                <span className="ml-2 text-gray-400 font-normal">→ {itemLabel === "Floor" ? "" : "Apt "}{selectedApt.number}</span>
+                <span className="ml-2 text-gray-400 font-normal">→ {itemLabel === "Floor" ? "" : t("apartment.apt") + " "}{selectedApt.number}</span>
               )}
             </h4>
             <div className="flex gap-2">
@@ -515,13 +513,13 @@ export function PolygonEditor({
                 }}
                 className="text-xs text-red-600 hover:text-red-700"
               >
-                Delete
+                {t("common.delete")}
               </button>
               <button
                 onClick={() => setSelectedPolygonIdx(null)}
                 className="text-xs text-gray-500 hover:text-gray-700"
               >
-                Deselect
+                {t("polygon.deselect")}
               </button>
             </div>
           </div>
@@ -529,29 +527,29 @@ export function PolygonEditor({
           {/* Link to item */}
           <div>
             <label className="text-xs font-medium text-gray-500 block mb-1">
-              Link to {itemLabel}
+              {t("polygon.linkTo", { label: itemLabel })}
             </label>
             <select
               className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
               value={selectedPolygon.apartmentId}
               onChange={(e) => handleLinkApartment(e.target.value)}
             >
-              <option value="">— Unlinked —</option>
+              <option value="">{t("polygon.unlinked")}</option>
               {apartments.map((apt) => (
                 <option
                   key={apt.id}
                   value={apt.id}
                   disabled={linkedApartmentIds.has(apt.id) && apt.id !== selectedPolygon.apartmentId}
                 >
-                  {itemLabel === "Floor" ? "" : "Apt "}{apt.number} ({apt.status.toLowerCase()})
-                  {linkedApartmentIds.has(apt.id) && apt.id !== selectedPolygon.apartmentId ? " (linked)" : ""}
+                  {itemLabel === "Floor" ? "" : t("apartment.apt") + " "}{apt.number} ({apt.status.toLowerCase()})
+                  {linkedApartmentIds.has(apt.id) && apt.id !== selectedPolygon.apartmentId ? ` ${t("polygon.linked")}` : ""}
                 </option>
               ))}
             </select>
           </div>
 
           <p className="text-xs text-gray-400">
-            {selectedPolygon.points.length} vertices
+            {t("polygon.nVertices", { n: selectedPolygon.points.length })}
           </p>
         </div>
       )}
@@ -559,10 +557,10 @@ export function PolygonEditor({
       {/* Summary */}
       <div className="flex items-center justify-between text-xs text-gray-500">
         <span>
-          {polygons.length} polygon(s) · {polygons.filter((p) => p.apartmentId).length} linked
+          {t("polygon.nPolygonsNLinked", { polygons: polygons.length, linked: polygons.filter((p) => p.apartmentId).length })}
         </span>
         <span>
-          {apartments.length - linkedApartmentIds.size} apartment(s) unlinked
+          {t("polygon.nUnlinked", { n: apartments.length - linkedApartmentIds.size, label: itemLabel })}
         </span>
       </div>
     </div>

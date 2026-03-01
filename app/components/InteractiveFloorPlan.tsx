@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useTranslation } from "react-i18next";
 import {
   DEFAULT_VIEWER_COLORS,
   getStatusColor as getStatusColorUtil,
@@ -70,6 +71,7 @@ export function InteractiveFloorPlan({
   className = "",
 }: InteractiveFloorPlanProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
     x: number;
@@ -154,7 +156,7 @@ export function InteractiveFloorPlan({
           style={{ left: tooltip.x, top: tooltip.y, transform: "translate(-50%, -100%)" }}
         >
           <div className="bg-gray-900/95 text-white rounded-md px-2.5 py-1.5 shadow-xl text-xs whitespace-nowrap backdrop-blur-sm">
-            <span className="font-semibold">Apt {apt.number}</span>
+            <span className="font-semibold">{t("apartment.apt")} {apt.number}</span>
             <span className="text-gray-300 ml-1.5">
               {apt.rooms}r · {apt.area}{areaUnit}
             </span>
@@ -175,31 +177,31 @@ export function InteractiveFloorPlan({
               className="px-3 py-2 text-white text-xs font-semibold"
               style={{ backgroundColor: getStatusStroke(apt.status) }}
             >
-              Apartment {apt.number}
+              {t("apartment.apartment")} {apt.number}
             </div>
             <div className="px-3 py-2.5 space-y-1">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">Rooms</span>
+                <span className="text-gray-500">{t("apartment.rooms")}</span>
                 <span className="font-medium">{apt.rooms}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">Area</span>
+                <span className="text-gray-500">{t("apartment.area")}</span>
                 <span className="font-medium">{apt.area} {areaUnit}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">Price</span>
+                <span className="text-gray-500">{t("apartment.price")}</span>
                 <span className="font-semibold">
-                  {apt.price ? `${currencySymbol}${apt.price.toLocaleString()}` : "On request"}
+                  {apt.price ? `${currencySymbol}${apt.price.toLocaleString()}` : t("apartment.onRequest")}
                 </span>
               </div>
               {apt.pricePerSqm && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Price/{areaUnit}</span>
+                  <span className="text-gray-500">{t("apartment.pricePerUnit", { unit: areaUnit })}</span>
                   <span className="font-medium">{currencySymbol}{apt.pricePerSqm.toLocaleString()}</span>
                 </div>
               )}
               <div className="flex justify-between text-xs pt-1 border-t border-gray-100">
-                <span className="text-gray-500">Status</span>
+                <span className="text-gray-500">{t("status.status")}</span>
                 <span
                   className="font-medium"
                   style={{ color: getStatusStroke(apt.status) }}
@@ -221,9 +223,9 @@ export function InteractiveFloorPlan({
         style={{ left: tooltip.x, top: tooltip.y, transform: "translate(-50%, -100%)" }}
       >
         <div className="bg-gray-900/95 text-white rounded-lg px-3 py-2 shadow-xl text-sm whitespace-nowrap backdrop-blur-sm">
-          <p className="font-semibold">Apt {apt.number}</p>
+          <p className="font-semibold">{t("apartment.apt")} {apt.number}</p>
           <p className="text-gray-300 text-xs">
-            {apt.rooms} rooms · {apt.area}{areaUnit}
+            {apt.rooms}{t("viewer.roomsSeparator")}{apt.area}{areaUnit}
             {apt.price && ` · ${currencySymbol}${apt.price.toLocaleString()}`}
           </p>
           <p className="text-xs mt-0.5">
@@ -256,7 +258,7 @@ export function InteractiveFloorPlan({
             <button
               onClick={() => zoomIn()}
               className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white transition-colors"
-              title="Zoom in"
+              title={t("zoom.zoomIn")}
             >
               <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -265,7 +267,7 @@ export function InteractiveFloorPlan({
             <button
               onClick={() => zoomOut()}
               className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white transition-colors"
-              title="Zoom out"
+              title={t("zoom.zoomOut")}
             >
               <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
@@ -274,7 +276,7 @@ export function InteractiveFloorPlan({
             <button
               onClick={() => resetTransform()}
               className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white transition-colors text-xs font-medium text-gray-700"
-              title="Reset zoom"
+              title={t("zoom.resetZoom")}
             >
               ↺
             </button>
@@ -287,7 +289,7 @@ export function InteractiveFloorPlan({
             <div className="relative">
               <img
                 src={imageUrl!}
-                alt="Floor plan"
+                alt={t("apartment.floorPlan")}
                 className="block w-full h-auto"
                 draggable={false}
               />
@@ -339,17 +341,17 @@ export function InteractiveFloorPlan({
       {({ zoomIn, zoomOut, resetTransform }) => (
         <>
           <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
-            <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title="Zoom in">
+            <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomIn")}>
               <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </button>
-            <button onClick={() => zoomOut()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title="Zoom out">
+            <button onClick={() => zoomOut()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomOut")}>
               <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
               </svg>
             </button>
-            <button onClick={() => resetTransform()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white text-xs font-medium text-gray-700" title="Reset">
+            <button onClick={() => resetTransform()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white text-xs font-medium text-gray-700" title={t("zoom.resetZoom")}>
               ↺
             </button>
           </div>
@@ -385,27 +387,27 @@ export function InteractiveFloorPlan({
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
               <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
-                <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title="Zoom in">
+                <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomIn")}>
                   <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </button>
-                <button onClick={() => zoomOut()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title="Zoom out">
+                <button onClick={() => zoomOut()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomOut")}>
                   <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
                   </svg>
                 </button>
-                <button onClick={() => resetTransform()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white text-xs font-medium text-gray-700" title="Reset">↺</button>
+                <button onClick={() => resetTransform()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white text-xs font-medium text-gray-700" title={t("zoom.resetZoom")}>↺</button>
               </div>
               <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
-                <img src={imageUrl} alt="Floor plan" className="block w-full h-auto" draggable={false} />
+                <img src={imageUrl} alt={t("apartment.floorPlan")} className="block w-full h-auto" draggable={false} />
               </TransformComponent>
             </>
           )}
         </TransformWrapper>
       ) : hasSvg ? renderSvgBased() : (
         <div className="flex items-center justify-center h-64 text-gray-400">
-          <p>No floor plan available</p>
+          <p>{t("viewer.noFloorPlan")}</p>
         </div>
       )}
 

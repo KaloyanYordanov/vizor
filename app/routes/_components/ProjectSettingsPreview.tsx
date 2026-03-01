@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DEFAULT_PROJECT_SETTINGS } from "~/utils/colors";
 
 export default function PreviewSettings({ project }: { project: any }) {
+  const { t } = useTranslation();
   const fallback = DEFAULT_PROJECT_SETTINGS;
 
   const [preview, setPreview] = useState({
@@ -23,7 +25,7 @@ export default function PreviewSettings({ project }: { project: any }) {
       <div className="md:col-span-2 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">Currency Symbol</label>
+            <label className="label">{t("settings.currencySymbol")}</label>
             <input
               name="currencySymbol"
               className="input"
@@ -33,7 +35,7 @@ export default function PreviewSettings({ project }: { project: any }) {
             />
           </div>
           <div>
-            <label className="label">Area Unit</label>
+            <label className="label">{t("settings.areaUnit")}</label>
             <input
               name="areaUnit"
               className="input"
@@ -45,7 +47,7 @@ export default function PreviewSettings({ project }: { project: any }) {
         </div>
 
         <div>
-          <p className="label mb-2">Status Colors</p>
+          <p className="label mb-2">{t("settings.statusColors")}</p>
           <div className="grid grid-cols-4 gap-3">
             <div className="flex flex-col items-center gap-2">
               <input
@@ -55,7 +57,7 @@ export default function PreviewSettings({ project }: { project: any }) {
                 className="h-10 w-14 cursor-pointer rounded border border-gray-200"
                 onChange={(e) => setPreview((p) => ({ ...p, availableColor: e.target.value }))}
               />
-              <span className="text-xs text-gray-600">Available</span>
+              <span className="text-xs text-gray-600">{t("status.available")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <input
@@ -65,7 +67,7 @@ export default function PreviewSettings({ project }: { project: any }) {
                 className="h-10 w-14 cursor-pointer rounded border border-gray-200"
                 onChange={(e) => setPreview((p) => ({ ...p, reservedColor: e.target.value }))}
               />
-              <span className="text-xs text-gray-600">Reserved</span>
+              <span className="text-xs text-gray-600">{t("status.reserved")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <input
@@ -75,7 +77,7 @@ export default function PreviewSettings({ project }: { project: any }) {
                 className="h-10 w-14 cursor-pointer rounded border border-gray-200"
                 onChange={(e) => setPreview((p) => ({ ...p, soldColor: e.target.value }))}
               />
-              <span className="text-xs text-gray-600">Sold</span>
+              <span className="text-xs text-gray-600">{t("status.sold")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <input
@@ -85,7 +87,7 @@ export default function PreviewSettings({ project }: { project: any }) {
                 className="h-10 w-14 cursor-pointer rounded border border-gray-200"
                 onChange={(e) => setPreview((p) => ({ ...p, unavailableColor: e.target.value }))}
               />
-              <span className="text-xs text-gray-600">Unavailable</span>
+              <span className="text-xs text-gray-600">{t("status.unavailable")}</span>
             </div>
           </div>
         </div>
@@ -99,7 +101,7 @@ export default function PreviewSettings({ project }: { project: any }) {
               className="h-10 w-14 cursor-pointer rounded border border-gray-200"
               onChange={(e) => setPreview((p) => ({ ...p, primaryColor: e.target.value }))}
             />
-            <span className="text-xs text-gray-600">Primary</span>
+            <span className="text-xs text-gray-600">{t("settings.primary")}</span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <input
@@ -109,10 +111,10 @@ export default function PreviewSettings({ project }: { project: any }) {
               className="h-10 w-14 cursor-pointer rounded border border-gray-200"
               onChange={(e) => setPreview((p) => ({ ...p, strokeColor: e.target.value }))}
             />
-            <span className="text-xs text-gray-600">Stroke</span>
+            <span className="text-xs text-gray-600">{t("settings.stroke")}</span>
           </div>
           <div>
-            <label className="label">Stroke Width</label>
+            <label className="label">{t("settings.strokeWidth")}</label>
             <input
               type="number"
               name="strokeWidth"
@@ -126,28 +128,28 @@ export default function PreviewSettings({ project }: { project: any }) {
         </div>
 
         <div>
-          <label className="label">Tooltip Style</label>
+          <label className="label">{t("settings.tooltipStyle")}</label>
           <select
             name="tooltipStyle"
             className="input"
             defaultValue={project.tooltipStyle ?? fallback.tooltipStyle}
             onChange={(e) => setPreview((p) => ({ ...p, tooltipStyle: e.target.value }))}
           >
-            <option value="modern">Modern (dark, rounded)</option>
-            <option value="minimal">Minimal (compact)</option>
-            <option value="detailed">Detailed (card with all info)</option>
+            <option value="modern">{t("settings.modern")}</option>
+            <option value="minimal">{t("settings.minimal")}</option>
+            <option value="detailed">{t("settings.detailed")}</option>
           </select>
         </div>
       </div>
 
       {/* live preview */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <h4 className="text-sm font-semibold mb-3">Live preview</h4>
+        <h4 className="text-sm font-semibold mb-3">{t("settings.livePreview")}</h4>
         <div className="space-y-3">
           <div className="p-3 rounded-md" style={{ background: preview.primaryColor, color: "white" }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs">Apartment</div>
+                <div className="text-xs">{t("apartment.apartment")}</div>
                 <div className="text-lg font-bold">Apt 101</div>
               </div>
               <div className="text-right">
@@ -160,19 +162,19 @@ export default function PreviewSettings({ project }: { project: any }) {
           <div className="flex flex-wrap gap-x-3 gap-y-1 items-center">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded flex-shrink-0" style={{ background: preview.availableColor }} />
-              <span className="text-xs text-gray-600 whitespace-nowrap">Available</span>
+              <span className="text-xs text-gray-600 whitespace-nowrap">{t("status.available")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded flex-shrink-0" style={{ background: preview.reservedColor }} />
-              <span className="text-xs text-gray-600 whitespace-nowrap">Reserved</span>
+              <span className="text-xs text-gray-600 whitespace-nowrap">{t("status.reserved")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded flex-shrink-0" style={{ background: preview.soldColor }} />
-              <span className="text-xs text-gray-600 whitespace-nowrap">Sold</span>
+              <span className="text-xs text-gray-600 whitespace-nowrap">{t("status.sold")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded flex-shrink-0" style={{ background: preview.unavailableColor }} />
-              <span className="text-xs text-gray-600 whitespace-nowrap">Unavailable</span>
+              <span className="text-xs text-gray-600 whitespace-nowrap">{t("status.unavailable")}</span>
             </div>
           </div>
 

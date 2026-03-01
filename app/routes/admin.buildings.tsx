@@ -4,6 +4,7 @@ import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { PageHeader, EmptyState } from "~/components/ui";
+import { useTranslation } from "react-i18next";
 
 export const meta: MetaFunction = () => [{ title: "Buildings | Vizor Admin" }];
 
@@ -74,14 +75,15 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BuildingsPage() {
   const { buildings, projects } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Buildings" description="Manage buildings across projects" />
+      <PageHeader title={t("building.buildings")} description={t("building.manageBuildingsDesc")} />
 
       <div className="card">
         <div className="card-header">
-          <h2 className="text-sm font-semibold">Add Building</h2>
+          <h2 className="text-sm font-semibold">{t("building.addBuilding")}</h2>
         </div>
         <div className="card-body">
           {actionData?.error && (
@@ -90,17 +92,17 @@ export default function BuildingsPage() {
           <Form method="post" className="flex flex-wrap gap-3 items-end">
             <input type="hidden" name="intent" value="create" />
             <div className="flex-1 min-w-[180px]">
-              <label className="label">Name</label>
-              <input name="name" className="input" placeholder="Building A" required />
+              <label className="label">{t("common.name")}</label>
+              <input name="name" className="input" placeholder={t("building.namePlaceholder")} required />
             </div>
             <div className="w-36">
-              <label className="label">Slug</label>
-              <input name="slug" className="input" placeholder="building-a" required />
+              <label className="label">{t("common.slug")}</label>
+              <input name="slug" className="input" placeholder={t("building.slugPlaceholder")} required />
             </div>
             <div className="w-52">
-              <label className="label">Project</label>
+              <label className="label">{t("editBuilding.project")}</label>
               <select name="projectId" className="select" required>
-                <option value="">Select project...</option>
+                <option value="">{t("common.select")}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({p.company.name})
@@ -109,16 +111,16 @@ export default function BuildingsPage() {
               </select>
             </div>
             <div className="flex-1 min-w-[180px]">
-              <label className="label">Description</label>
-              <input name="description" className="input" placeholder="Optional" />
+              <label className="label">{t("common.description")}</label>
+              <input name="description" className="input" placeholder={t("common.optional")} />
             </div>
-            <button type="submit" className="btn-primary">Add</button>
+            <button type="submit" className="btn-primary">{t("common.add")}</button>
           </Form>
         </div>
       </div>
 
       {buildings.length === 0 ? (
-        <EmptyState title="No buildings" description="Create your first building above." />
+        <EmptyState title={t("building.noBuildings")} description={t("building.noBuildingsDesc")} />
       ) : (
         (() => {
           // Group buildings by project
@@ -150,10 +152,10 @@ export default function BuildingsPage() {
                     </colgroup>
                     <thead>
                       <tr className="border-b border-gray-100 bg-white text-left">
-                        <th className="px-6 py-3 font-medium text-gray-500">Name</th>
-                        <th className="px-6 py-3 font-medium text-gray-500">Floors</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">{t("common.name")}</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">{t("floor.floors")}</th>
                         <th className="px-6 py-3 font-medium text-gray-500">SVG</th>
-                        <th className="px-6 py-3 font-medium text-gray-500">Actions</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">{t("common.actions")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -175,12 +177,12 @@ export default function BuildingsPage() {
                           <td className="px-6 py-3">
                             <div className="flex gap-2">
                               <Link to={`/admin/buildings/${b.id}`} className="text-brand-600 hover:text-brand-700 text-sm">
-                                Edit
+                                {t("common.edit")}
                               </Link>
-                              <Form method="post" onSubmit={(e) => { if (!confirm("Delete this building?")) e.preventDefault(); }}>
+                              <Form method="post" onSubmit={(e) => { if (!confirm(t("building.deleteBuilding"))) e.preventDefault(); }}>
                                 <input type="hidden" name="intent" value="delete" />
                                 <input type="hidden" name="id" value={b.id} />
-                                <button type="submit" className="text-red-600 hover:text-red-700 text-sm">Delete</button>
+                                <button type="submit" className="text-red-600 hover:text-red-700 text-sm">{t("common.delete")}</button>
                               </Form>
                             </div>
                           </td>

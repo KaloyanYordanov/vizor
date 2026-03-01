@@ -4,7 +4,11 @@ import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { PageHeader } from "~/components/ui";
-import { ApartmentStatus } from "@prisma/client";
+import type { ApartmentStatus } from "@prisma/client";
+import { useTranslation } from "react-i18next";
+
+/** Client-safe list of apartment statuses (avoids importing @prisma/client runtime in browser) */
+const APARTMENT_STATUSES: string[] = ["AVAILABLE", "RESERVED", "SOLD", "UNAVAILABLE"];
 
 export const meta: MetaFunction = () => [{ title: "Edit Apartment | Vizor Admin" }];
 
@@ -76,12 +80,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function EditApartmentPage() {
   const { apartment, buildingId } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { t } = useTranslation();
   const bldg = apartment.floor.building;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Apartment ${apartment.number}`}
+        title={`${t("apartment.apartment")} ${apartment.number}`}
         description={`${bldg.project.company.name} → ${bldg.project.name} → ${bldg.name} → Floor ${apartment.floor.number}`}
       />
 
@@ -93,15 +98,15 @@ export default function EditApartmentPage() {
           <Form method="post" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Number</label>
+                <label className="label">{t("common.number")}</label>
                 <input name="number" className="input" defaultValue={apartment.number} required />
               </div>
               <div>
-                <label className="label">Status</label>
+                <label className="label">{t("status.status")}</label>
                 <select name="status" className="select" defaultValue={apartment.status}>
-                  {Object.values(ApartmentStatus).map((s) => (
+                  {APARTMENT_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {s.charAt(0) + s.slice(1).toLowerCase()}
+                      {t(`status.${s.toLowerCase()}`)}
                     </option>
                   ))}
                 </select>
@@ -109,29 +114,29 @@ export default function EditApartmentPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="label">Rooms</label>
+                <label className="label">{t("apartment.rooms")}</label>
                 <input name="rooms" type="number" step="0.5" className="input" defaultValue={apartment.rooms} required />
               </div>
               <div>
-                <label className="label">Area (m²)</label>
+                <label className="label">{t("editApartment.areaUnit", { unit: "m²" })}</label>
                 <input name="area" type="number" step="0.1" className="input" defaultValue={apartment.area} required />
               </div>
               <div>
-                <label className="label">Price (€)</label>
+                <label className="label">{t("editApartment.priceCurrency", { currency: "€" })}</label>
                 <input name="price" type="number" className="input" defaultValue={apartment.price || ""} />
               </div>
             </div>
             <div>
-              <label className="label">SVG Path ID</label>
-              <input name="svgPathId" className="input" defaultValue={apartment.svgPathId || ""} placeholder="apt-101" />
-              <p className="text-xs text-gray-400 mt-1">ID of the SVG element that represents this apartment on the floor plan</p>
+              <label className="label">{t("apartment.svgPathId")}</label>
+              <input name="svgPathId" className="input" defaultValue={apartment.svgPathId || ""} placeholder={t("apartment.svgPathIdPlaceholder")} />
+              <p className="text-xs text-gray-400 mt-1">{t("apartment.svgPathIdHelp")}</p>
             </div>
             <div>
-              <label className="label">Description</label>
+              <label className="label">{t("common.description")}</label>
               <textarea name="description" className="input" rows={3} defaultValue={apartment.description || ""} />
             </div>
             <div>
-              <label className="label">Features (JSON)</label>
+              <label className="label">{t("apartment.featuresJson")}</label>
               <textarea
                 name="features"
                 className="input font-mono text-xs"
@@ -140,9 +145,9 @@ export default function EditApartmentPage() {
               />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="btn-primary">Save</button>
+              <button type="submit" className="btn-primary">{t("common.save")}</button>
               <Link to={`/admin/buildings/${buildingId}`} className="btn-secondary">
-                Cancel
+                {t("common.cancel")}
               </Link>
             </div>
           </Form>
