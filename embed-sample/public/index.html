@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vizor Embed Sample</title>
+</head>
+<body>
+  <h1>Vizor Embedding Demo (Script loader)</h1>
+  <p>Use the script tag option to automatically create an iframe pointing at the Vizor viewer.</p>
+  <p><a href="./iframe.html">See the direct iframe demo &raquo;</a></p>
+  <p><a href="./manual.html">See the manual script-copy demo &raquo;</a></p>
+
+  <!-- container that the script will turn into an iframe -->
+  <div id="vizor-container" style="margin:2rem 0; border:1px solid #ccc; height:800px;"></div>
+
+  <!--
+    IMPORTANT:
+    change the origin below to wherever your Vizor app is running.
+    when you fetch the embed script directly from the Vizor server the
+    "origin" is computed internally, so the iframe will point to the
+    same host.  if you copy/paste the script into your own project the
+    origin becomes your site which leads to a 404 for vizor-app.js.
+  -->
+  <script>
+    // example: vizor dev server on localhost:3030
+    const VIZOR_HOST = "http://localhost:3030";
+  </script>
+  <script
+    src="http://localhost:3030/embed/horizon/sunrise-residences?target=vizor-container&width=100%&height=800px"
+    async
+  ></script>
+</body>
+</html>

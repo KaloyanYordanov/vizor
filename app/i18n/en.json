@@ -23,7 +23,9 @@
     "preview": "Preview",
     "select": "Select...",
     "goHome": "Go Home",
-    "somethingWentWrong": "Something went wrong"
+    "somethingWentWrong": "Something went wrong",
+    "createdAt": "Created",
+    "updatedAt": "Updated"
   },
   "status": {
     "available": "Available",
@@ -64,7 +66,20 @@
     "numberRoomsAreaRequired": "Number, rooms, and area are required",
     "notFound": "Apartment not found",
     "polygon": "Polygon",
-    "mapped": "✓ mapped"
+    "mapped": "✓ mapped",
+    "notMapped": "Not mapped to floor plan yet",
+    "mapping": "Floor Plan Mapping",
+    "editDetails": "Edit Details",
+    "floorPlanUrlLabel": "Floor Plan URL",
+    "floorPlanUrlHelp": "URL of the apartment-specific floor plan image",
+    "quickInfo": "Quick Info",
+    "gallery": "Gallery",
+    "addImage": "Add Image",
+    "imageUrlPlaceholder": "https://...",
+    "captionPlaceholder": "Caption (optional)",
+    "deleteImageConfirm": "Delete this image?",
+    "viewDetails": "View Details",
+    "noImages": "No images available"
   },
   "building": {
     "building": "Building",
@@ -113,7 +128,15 @@
     "selectFloor": "Select a Floor",
     "noFloorPlan": "No floor plan available for this floor.",
     "nOfTotalAvailable": "{{n}}/{{total}} available",
-    "interactive": "Interactive"
+    "interactive": "Interactive",
+    "floorType": "Type",
+    "typeApartment": "Apartment",
+    "typeGarage": "Garage",
+    "typeCommercial": "Commercial",
+    "copyFloorMapFrom": "Copy floor map from",
+    "copyFloorMap": "Copy",
+    "copyFloorMapConfirm": "Copy floor map from selected floor? This will overwrite the current floor plan image and polygon mappings.",
+    "floorTypeUpdated": "Floor type updated"
   },
   "filter": {
     "rooms": "Rooms",
@@ -198,11 +221,14 @@
     "stroke": "Stroke",
     "strokeWidth": "Stroke Width",
     "tooltipStyle": "Tooltip Style",
-    "modern": "Modern (dark, rounded)",
+    "modern": "Modern (dark)",
     "minimal": "Minimal (compact)",
     "detailed": "Detailed (card with all info)",
     "livePreview": "Live preview",
-    "tooltipPreview": "Tooltip preview ({{style}})"
+    "tooltipPreview": "Tooltip preview ({{style}})",
+    "tooltipShape": "Tooltip Shape",
+    "rounded": "Rounded",
+    "rectangular": "Rectangular"
   },
   "login": {
     "title": "Login | Vizor",
@@ -247,7 +273,9 @@
     "legend": "Legend",
     "startingFrom": "Starting from",
     "thankYouRequest": "Thank you! Your request has been submitted.",
-    "roomsSeparator": " rooms · "
+    "roomsSeparator": " rooms · ",
+    "backToList": "Back to list",
+    "backToProject": "Back to project"
   },
   "polygon": {
     "select": "Select",

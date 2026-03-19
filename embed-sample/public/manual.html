@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vizor Embed Sample – Manual script copy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <h1>Vizor Embedding Demo (manual script copy)</h1>
+  <p>This page shows what happens when you <em>copy the generated loader script</em> into your own site instead of referencing it from the Vizor server.</p>
+  <p><a href="./index.html">Back to script loader demo &raquo;</a></p>
+
+  <!-- the code below mirrors what /embed/... returns; change the URL of the iframe source
+       to mimic the problem.  leave the container ID to match the script. -->
+  <div id="vizor-container" style="margin:2rem 0; border:1px solid #ccc; height:800px;"></div>
+  <script>
+  (function() {
+    var container = document.getElementById("vizor-container");
+    if (!container) {
+      console.error("Vizor: Container element #vizor-container not found");
+      return;
+    }
+    var iframe = document.createElement("iframe");
+    // note: this origin is whatever your page is served from!
+    iframe.src = "http://localhost:3030/view/horizon/sunrise-residences";
+    iframe.style.width = "100%";
+    iframe.style.height = "800px";
+    iframe.style.border = "none";
+    iframe.style.borderRadius = "12px";
+    iframe.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+    iframe.setAttribute("allowfullscreen", "true");
+    iframe.setAttribute("loading", "lazy");
+    iframe.title = "Vizor Apartment Selector";
+    container.appendChild(iframe);
+  })();
+  </script>
+
+  <p>If you load this page with a different host/port than your Vizor app, the iframe
+  will attempt to fetch assets from the wrong place and you'll see 404s for
+  <code>vizor-app.js</code>.</p>
+</body>
+</html>

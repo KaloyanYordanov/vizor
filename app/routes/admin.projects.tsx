@@ -56,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     await prisma.project.create({ data: { name, slug, description, address, companyId } });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   if (intent === "delete") {
@@ -66,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({ error: "Forbidden" }, { status: 403 });
     }
     await prisma.project.delete({ where: { id } });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   return json({ error: "Unknown action" }, { status: 400 });

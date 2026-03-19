@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { Link } from "@remix-run/react";
 import type { ApartmentStatus } from "@prisma/client";
 import { STATUS_UI } from "~/utils/colors";
 import { useTranslation } from "react-i18next";
@@ -21,8 +22,9 @@ interface ApartmentModalProps {
   areaUnit?: string;
   /** Shareable link for this apartment */
   shareUrl?: string;
-  /** Enable callback request form */
-  showRequestForm?: boolean;
+  /** Link to the dedicated apartment detail page */
+  detailUrl?: string;
+  /** Enable callback request form */  showRequestForm?: boolean;
   onClose: () => void;
   onRequestSubmit?: (data: { name: string; email: string; phone: string; message: string }) => void;
 }
@@ -34,6 +36,7 @@ export function ApartmentModal({
   currencySymbol = "€",
   areaUnit = "m²",
   shareUrl,
+  detailUrl,
   showRequestForm = true,
   onClose,
   onRequestSubmit,
@@ -199,6 +202,15 @@ export function ApartmentModal({
           )}
 
           {/* Request callback form */}
+          {detailUrl && (
+            <Link
+              to={detailUrl}
+              className="block text-center text-sm text-brand-600 hover:text-brand-700 font-medium py-2.5 border border-brand-200 rounded-xl hover:bg-brand-50 transition-colors"
+            >
+              {t("apartment.viewDetails")} →
+            </Link>
+          )}
+
           {showRequestForm && apartment.status === "AVAILABLE" && onRequestSubmit && (
             <div className="border-t border-gray-100 pt-4">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("apartment.requestInfo")}</h3>

@@ -17,6 +17,7 @@ export default function PreviewSettings({ project }: { project: any }) {
     strokeColor: project.strokeColor ?? fallback.strokeColor,
     strokeWidth: project.strokeWidth ?? fallback.strokeWidth,
     tooltipStyle: project.tooltipStyle ?? (fallback.tooltipStyle as string),
+    tooltipShape: project.tooltipShape ?? "rounded",
   });
 
   return (
@@ -140,6 +141,19 @@ export default function PreviewSettings({ project }: { project: any }) {
             <option value="detailed">{t("settings.detailed")}</option>
           </select>
         </div>
+
+        <div>
+          <label className="label">{t("settings.tooltipShape")}</label>
+          <select
+            name="tooltipShape"
+            className="input"
+            defaultValue={project.tooltipShape ?? "rounded"}
+            onChange={(e) => setPreview((p) => ({ ...p, tooltipShape: e.target.value }))}
+          >
+            <option value="rounded">{t("settings.rounded")}</option>
+            <option value="rectangular">{t("settings.rectangular")}</option>
+          </select>
+        </div>
       </div>
 
       {/* live preview */}
@@ -179,15 +193,15 @@ export default function PreviewSettings({ project }: { project: any }) {
           </div>
 
           <div>
-            <p className="text-xs text-gray-500 mb-1">Tooltip preview ({preview.tooltipStyle})</p>
+            <p className="text-xs text-gray-500 mb-1">Tooltip preview ({preview.tooltipStyle}, {preview.tooltipShape})</p>
             {preview.tooltipStyle === "modern" && (
-              <div className="inline-block rounded-lg bg-gray-900 px-3 py-2 text-sm text-white shadow">Apt 101 — 2 rooms · 65m²</div>
+              <div className={`inline-block ${preview.tooltipShape === "rectangular" ? "rounded-none" : "rounded-lg"} bg-gray-900 px-3 py-2 text-sm text-white shadow`}>Apt 101 — 2 rooms · 65m²</div>
             )}
             {preview.tooltipStyle === "minimal" && (
-              <div className="inline-block rounded px-2 py-1 text-xs bg-white border border-gray-200">Apt 101 — 65m²</div>
+              <div className={`inline-block ${preview.tooltipShape === "rectangular" ? "rounded-none" : "rounded"} px-2 py-1 text-xs bg-white border border-gray-200`}>Apt 101 — 65m²</div>
             )}
             {preview.tooltipStyle === "detailed" && (
-              <div className="w-full rounded-lg border border-gray-200 bg-white p-3 text-sm">
+              <div className={`w-full ${preview.tooltipShape === "rectangular" ? "rounded-none" : "rounded-lg"} border border-gray-200 bg-white p-3 text-sm`}>
                 <div className="font-semibold">Apt 101</div>
                 <div className="text-xs text-gray-500">2 rooms · 65m² · {preview.currencySymbol}{(95000).toLocaleString()}</div>
                 <div className="mt-2 text-xs">Features: balcony, parking</div>

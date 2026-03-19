@@ -23,7 +23,9 @@
     "preview": "Преглед",
     "select": "Изберете...",
     "goHome": "Начало",
-    "somethingWentWrong": "Нещо се обърка"
+    "somethingWentWrong": "Нещо се обърка",
+    "createdAt": "Създаден",
+    "updatedAt": "Обновен"
   },
   "status": {
     "available": "Свободен",
@@ -64,7 +66,20 @@
     "numberRoomsAreaRequired": "Номер, стаи и площ са задължителни",
     "notFound": "Апартаментът не е намерен",
     "polygon": "Полигон",
-    "mapped": "✓ картиран"
+    "mapped": "✓ картиран",
+    "notMapped": "Все още не е свързан с етажен план",
+    "mapping": "Връзка с етажен план",
+    "editDetails": "Редактиране",
+    "floorPlanUrlLabel": "Линк към етажен план",
+    "floorPlanUrlHelp": "URL адрес на изображението с етажен план на апартамента",
+    "quickInfo": "Бърза информация",
+    "gallery": "Галерия",
+    "addImage": "Добави изображение",
+    "imageUrlPlaceholder": "https://...",
+    "captionPlaceholder": "Надпис (по желание)",
+    "deleteImageConfirm": "Изтриване на това изображение?",
+    "viewDetails": "Виж детайли",
+    "noImages": "Няма налични изображения"
   },
   "building": {
     "building": "Сграда",
@@ -113,7 +128,15 @@
     "selectFloor": "Изберете етаж",
     "noFloorPlan": "Няма наличен етажен план за този етаж.",
     "nOfTotalAvailable": "{{n}}/{{total}} свободни",
-    "interactive": "Интерактивен"
+    "interactive": "Интерактивен",
+    "floorType": "Тип",
+    "typeApartment": "Жилищен",
+    "typeGarage": "Гараж",
+    "typeCommercial": "Търговски",
+    "copyFloorMapFrom": "Копирай етажен план от",
+    "copyFloorMap": "Копирай",
+    "copyFloorMapConfirm": "Копиране на етажен план от избрания етаж? Това ще замени текущото изображение и полигони.",
+    "floorTypeUpdated": "Типът на етажа е обновен"
   },
   "filter": {
     "rooms": "Стаи",
@@ -198,11 +221,14 @@
     "stroke": "Контур",
     "strokeWidth": "Ширина на контура",
     "tooltipStyle": "Стил на подсказка",
-    "modern": "Модерен (тъмен, заоблен)",
+    "modern": "Модерен (тъмен)",
     "minimal": "Минимален (компактен)",
     "detailed": "Детайлен (карта с цялата информация)",
     "livePreview": "Преглед на живо",
-    "tooltipPreview": "Преглед на подсказка ({{style}})"
+    "tooltipPreview": "Преглед на подсказка ({{style}})",
+    "tooltipShape": "Форма на подсказка",
+    "rounded": "Заоблена",
+    "rectangular": "Правоъгълна"
   },
   "login": {
     "title": "Вход | Vizor",
@@ -247,7 +273,9 @@
     "legend": "Легенда",
     "startingFrom": "Започващи от",
     "thankYouRequest": "Благодарим! Вашата заявка беше изпратена.",
-    "roomsSeparator": " стаи · "
+    "roomsSeparator": " стаи · ",
+    "backToList": "Обратно към списъка",
+    "backToProject": "Обратно към проекта"
   },
   "polygon": {
     "select": "Избери",

@@ -5,6 +5,7 @@ interface FilterBarProps {
   minRooms?: number;
   maxRooms?: number;
   maxPrice?: number;
+  currencySymbol?: string;
   onFilterChange: (filters: FilterValues) => void;
 }
 
@@ -15,7 +16,7 @@ export interface FilterValues {
   status: string[];
 }
 
-export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFilterChange }: FilterBarProps) {
+export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, currencySymbol = "€", onFilterChange }: FilterBarProps) {
   const { t } = useTranslation();
   const [rooms, setRooms] = useState<number | null>(null);
   const [priceMin, setPriceMin] = useState<number | null>(null);
@@ -87,7 +88,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
 
           {/* Price range */}
           <div className="min-w-[130px]">
-            <label className="label">{t("filter.minPriceCurrency", { currency: "€" })}</label>
+            <label className="label">{t("filter.minPriceCurrency", { currency: currencySymbol })}</label>
             <input
               type="number"
               className="input"
@@ -97,7 +98,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, onFil
             />
           </div>
           <div className="min-w-[130px]">
-            <label className="label">{t("filter.maxPriceCurrency", { currency: "€" })}</label>
+            <label className="label">{t("filter.maxPriceCurrency", { currency: currencySymbol })}</label>
             <input
               type="number"
               className="input"

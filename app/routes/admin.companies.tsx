@@ -35,13 +35,13 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({ error: "A company with this slug already exists" }, { status: 400 });
     }
     await prisma.company.create({ data: { name, slug, website } });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   if (intent === "delete") {
     const id = form.get("id") as string;
     await prisma.company.delete({ where: { id } });
-    return json({ success: true });
+    return json({ error: null, success: true });
   }
 
   return json({ error: "Unknown action" }, { status: 400 });

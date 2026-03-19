@@ -1,10 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { Form, Link, useActionData, useLoaderData, useNavigation, useSubmit, useFetcher } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { PageHeader, StatusBadge } from "~/components/ui";
-import type { ApartmentStatus } from "@prisma/client";
+import type { ApartmentStatus, FloorType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { type DrawnPolygon } from "~/components/PolygonEditor";
 import { ImagePolygonMapper } from "~/components/ImagePolygonMapper";
 import { useMemo } from "react";
@@ -13,25 +14,31 @@ import { useTranslation } from "react-i18next";
 export const meta: MetaFunction = () => [{ title: "Edit Building | Vizor Admin" }];
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
-  const building = await prisma.building.findUniqueOrThrow({
-    where: { id: params.buildingId },
-    include: {
-      project: { include: { company: { select: { name: true, slug: true } } } },
-      floors: {
-        include: {
-          apartments: { orderBy: { number: "asc" } },
+  try {
+    const user = await requireUser(request);
+    const building = await prisma.building.findUniqueOrThrow({
+      where: { id: params.buildingId },
+      include: {
+        project: { include: { company: { select: { name: true, slug: true } } } },
+        floors: {
+          include: {
+            apartments: { orderBy: { number: "asc" } },
+          },
+          orderBy: { number: "asc" },
         },
-        orderBy: { number: "asc" },
       },
-    },
-  });
+    });
 
-  if (user.role !== "SUPER_ADMIN" && building.project.companyId !== user.companyId) {
-    throw new Response("Forbidden", { status: 403 });
+    if (user.role !== "SUPER_ADMIN" && building.project.companyId !== user.companyId) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+
+    return json({ building });
+  } catch (e) {
+    console.error("loader/admin.building error:", e);
+    // rethrow so Remix shows 500
+    throw e;
   }
-
-  return json({ building });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -59,13 +66,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
       where: { id: params.buildingId },
       data: { name, slug, description },
     });
-    return json({ success: true, message: "Building updated" });
+    return json({ error: null, success: true, message: "Building updated" });
   }
 
   // Add floor
   if (intent === "add-floor") {
     const number = parseInt(form.get("floorNumber") as string);
     const label = (form.get("floorLabel") as string) || null;
+    const type = (form.get("floorType") as string) || "APARTMENT";
 
     if (isNaN(number)) return json({ error: "Floor number is required" }, { status: 400 });
 
@@ -78,18 +86,36 @@ export async function action({ request, params }: ActionFunctionArgs) {
       data: {
         number,
         label,
+        type: type as any,
         buildingId: params.buildingId!,
         sortOrder: number,
       },
     });
-    return json({ success: true, message: "Floor added" });
+    return json({ error: null, success: true, message: "Floor added" });
+  }
+
+  // Update floor type
+  if (intent === "update-floor-type") {
+    const floorId = form.get("floorId") as string;
+    const floorType = (form.get("floorType") as string) || "APARTMENT";
+    try {
+      await prisma.floor.update({
+        where: { id: floorId },
+        data: { type: floorType as any },
+      });
+      // return translation key; client will call t() on message
+      return json({ error: null, success: true, message: "floor.floorTypeUpdated" });
+    } catch (e) {
+      console.error("update-floor-type error:", e);
+      return json({ error: `Failed to update floor type: ${e}` }, { status: 500 });
+    }
   }
 
   // Delete floor
   if (intent === "delete-floor") {
     const floorId = form.get("floorId") as string;
     await prisma.floor.delete({ where: { id: floorId } });
-    return json({ success: true, message: "Floor deleted" });
+    return json({ error: null, success: true, message: "Floor deleted" });
   }
 
   // Add apartment
@@ -99,7 +125,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const rooms = parseFloat(form.get("rooms") as string);
     const area = parseFloat(form.get("area") as string);
     const price = form.get("price") ? parseFloat(form.get("price") as string) : null;
-    const status = (form.get("status") as ApartmentStatus) || ApartmentStatus.AVAILABLE;
+    const status = (form.get("status") as string) || "AVAILABLE";
 
     if (!number || isNaN(rooms) || isNaN(area)) {
       return json({ error: "Number, rooms, and area are required" }, { status: 400 });
@@ -112,11 +138,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
         area,
         price,
         pricePerSqm: price ? Math.round(price / area) : null,
-        status,
+        status: status as any,
         floorId,
       },
     });
-    return json({ success: true, message: "Apartment added" });
+    return json({ error: null, success: true, message: "Apartment added" });
   }
 
   // Update apartment
@@ -139,14 +165,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
         status,
       },
     });
-    return json({ success: true, message: "Apartment updated" });
+    return json({ error: null, success: true, message: "Apartment updated" });
   }
 
   // Delete apartment
   if (intent === "delete-apartment") {
     const aptId = form.get("aptId") as string;
     await prisma.apartment.delete({ where: { id: aptId } });
-    return json({ success: true, message: "Apartment deleted" });
+    return json({ error: null, success: true, message: "Apartment deleted" });
   }
 
   // Update floor image URL
@@ -157,7 +183,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       where: { id: floorId },
       data: { imageUrl },
     });
-    return json({ success: true, message: "Floor image updated" });
+    return json({ error: null, success: true, message: "Floor image updated" });
   }
 
   // Save polygon data for apartments
@@ -170,7 +196,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const floorId = form.get("floorId") as string;
       await prisma.apartment.updateMany({
         where: { floorId },
-        data: { polygonData: null },
+        data: { polygonData: Prisma.DbNull },
       });
 
       // Set polygon data for each linked apartment
@@ -182,7 +208,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
           });
         }
       }
-      return json({ success: true, message: "Polygon mappings saved" });
+      return json({ error: null, success: true, message: "Polygon mappings saved" });
     } catch {
       return json({ error: "Invalid polygon data" }, { status: 400 });
     }
@@ -195,7 +221,40 @@ export async function action({ request, params }: ActionFunctionArgs) {
       where: { id: params.buildingId },
       data: { imageUrl },
     });
-    return json({ success: true, message: "Building image updated" });
+    return json({ error: null, success: true, message: "Building image updated" });
+  }
+
+  // Copy floor map from another floor
+  if (intent === "copy-floor-map") {
+    const targetFloorId = form.get("targetFloorId") as string;
+    const sourceFloorId = form.get("sourceFloorId") as string;
+    if (!targetFloorId || !sourceFloorId) {
+      return json({ error: "Source and target floors are required" }, { status: 400 });
+    }
+    const sourceFloor = await prisma.floor.findUnique({
+      where: { id: sourceFloorId },
+      include: { apartments: { select: { id: true, number: true, polygonData: true } } },
+    });
+    if (!sourceFloor) return json({ error: "Source floor not found" }, { status: 404 });
+
+    // Copy imageUrl
+    await prisma.floor.update({
+      where: { id: targetFloorId },
+      data: { imageUrl: sourceFloor.imageUrl },
+    });
+
+    // Copy polygon data by matching apartment numbers
+    const targetApartments = await prisma.apartment.findMany({ where: { floorId: targetFloorId } });
+    for (const targetApt of targetApartments) {
+      const sourceApt = sourceFloor.apartments.find((a) => a.number === targetApt.number);
+      if (sourceApt?.polygonData) {
+        await prisma.apartment.update({
+          where: { id: targetApt.id },
+          data: { polygonData: sourceApt.polygonData },
+        });
+      }
+    }
+    return json({ error: null, success: true, message: "Floor map copied" });
   }
 
   // Save building floor polygon data
@@ -208,7 +267,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         where: { id: params.buildingId },
         data: { floorsPolygonData: parsed as any },
       });
-      return json({ success: true, message: "Building floor polygon mappings saved" });
+      return json({ error: null, success: true, message: "Building floor polygon mappings saved" });
     } catch (e) {
       console.error("save-building-polygons error:", e);
       return json({ error: "Invalid polygon data" }, { status: 400 });
@@ -232,7 +291,7 @@ export default function EditBuildingPage() {
         description={`${building.project.company.name} → ${building.project.name}`}
         actions={
           <Link
-            to={`/view/${building.project.company.slug}/${building.project.slug}`}
+            to={`/view/${building.project.company.slug}/${building.project.slug}?building=${building.slug}`}
             className="btn-secondary btn-sm"
             target="_blank"
           >
@@ -241,15 +300,17 @@ export default function EditBuildingPage() {
         }
       />
 
-      {(actionData?.error || actionData?.message) && (
+      {('message' in (actionData ?? {}) || actionData?.error) && (
         <div
           className={`rounded-lg p-3 text-sm ${
-            actionData.error
+            actionData?.error
               ? "bg-red-50 text-red-600"
               : "bg-green-50 text-green-600"
           }`}
         >
-          {actionData.error || actionData.message}
+          {actionData?.error
+            ? actionData.error
+            : t((actionData as any).message)}
         </div>
       )}
 
@@ -302,6 +363,14 @@ export default function EditBuildingPage() {
                   <label className="label">{t("common.label")}</label>
                   <input name="floorLabel" className="input" placeholder={t("floor.floorLabelPlaceholder")} />
                 </div>
+                <div className="w-36">
+                  <label className="label">{t("floor.floorType")}</label>
+                  <select name="floorType" className="select">
+                    <option value="APARTMENT">{t("floor.typeApartment")}</option>
+                    <option value="GARAGE">{t("floor.typeGarage")}</option>
+                    <option value="COMMERCIAL">{t("floor.typeCommercial")}</option>
+                  </select>
+                </div>
                 <button type="submit" className="btn-primary" disabled={isSubmitting}>
                   {t("floor.addFloor")}
                 </button>
@@ -321,6 +390,7 @@ export default function EditBuildingPage() {
           floor={floor}
           buildingId={building.id}
           isSubmitting={isSubmitting}
+          allFloors={building.floors}
         />
       ))}
     </div>
@@ -387,12 +457,16 @@ function FloorCard({
   floor,
   buildingId,
   isSubmitting,
+  allFloors,
 }: {
   floor: any;
   buildingId: string;
   isSubmitting: boolean;
+  allFloors: any[];
 }) {
   const { t } = useTranslation();
+  const submit = useSubmit();
+  const fetcher = useFetcher();
   const floorImageUrl: string | null = floor.imageUrl || null;
 
   const apartmentItems = useMemo(
@@ -421,6 +495,14 @@ function FloorCard({
     [floor.apartments]
   );
 
+  const FLOOR_TYPE_COLORS: Record<string, string> = {
+    APARTMENT: "bg-blue-100 text-blue-700",
+    GARAGE: "bg-amber-100 text-amber-700",
+    COMMERCIAL: "bg-purple-100 text-purple-700",
+  };
+
+  const floorsWithMaps = allFloors.filter((f: any) => f.id !== floor.id && f.imageUrl);
+
   return (
     <div className="card">
       <div className="card-header flex items-center justify-between">
@@ -433,7 +515,26 @@ function FloorCard({
           </h3>
           <p className="text-xs text-gray-500">{t("floor.nApartments", { n: floor.apartments.length })}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <fetcher.Form method="post" className="inline-block">
+            <input type="hidden" name="intent" value="update-floor-type" />
+            <input type="hidden" name="floorId" value={floor.id} />
+            <select
+              name="floorType"
+              defaultValue={floor.type || "APARTMENT"}
+              onChange={(e) => fetcher.submit(e.currentTarget.form!) }
+              className="select text-xs py-1 pr-7"
+            >
+              <option value="APARTMENT">{t("floor.typeApartment")}</option>
+              <option value="GARAGE">{t("floor.typeGarage")}</option>
+              <option value="COMMERCIAL">{t("floor.typeCommercial")}</option>
+            </select>
+          </fetcher.Form>
+          {fetcher.data?.message && (
+            <span className="ml-2 text-sm text-green-600">
+              {t(fetcher.data.message)}
+            </span>
+          )}
           <Form
             method="post"
             onSubmit={(e) => {
@@ -460,7 +561,34 @@ function FloorCard({
               </span>
             )}
           </summary>
-          <div className="mt-3">
+          <div className="mt-3 space-y-3">
+            {/* Copy floor map from another floor */}
+            {floorsWithMaps.length > 0 && (
+              <Form method="post" className="flex items-end gap-2 p-2 bg-gray-50 rounded-lg">
+                <input type="hidden" name="intent" value="copy-floor-map" />
+                <input type="hidden" name="targetFloorId" value={floor.id} />
+                <div className="flex-1">
+                  <label className="label text-xs">{t("floor.copyFloorMapFrom")}</label>
+                  <select name="sourceFloorId" className="select text-sm">
+                    {floorsWithMaps.map((f: any) => (
+                      <option key={f.id} value={f.id}>
+                        {t("floor.floorN", { n: f.number })}{f.label ? ` — ${f.label}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="btn-secondary btn-sm"
+                  disabled={isSubmitting}
+                  onClick={(e) => {
+                    if (!confirm(t("floor.copyFloorMapConfirm"))) e.preventDefault();
+                  }}
+                >
+                  {t("floor.copyFloorMap")}
+                </button>
+              </Form>
+            )}
             <ImagePolygonMapper
               imageUrl={floorImageUrl}
               initialPolygons={initialPolygons}

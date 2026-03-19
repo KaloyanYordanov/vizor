@@ -68,6 +68,7 @@ model Project {
   strokeColor     String     @default("#1e293b")
   strokeWidth     Float      @default(2)
   tooltipStyle    String     @default("modern")
+  tooltipShape    String     @default("rounded")
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -94,10 +95,17 @@ model Building {
   @@map("buildings")
 }
 
+enum FloorType {
+  APARTMENT
+  GARAGE
+  COMMERCIAL
+}
+
 model Floor {
   id          String      @id @default(uuid())
   number      Int
   label       String?     // e.g. "Ground Floor", "Penthouse"
+  type        FloorType   @default(APARTMENT)
   svgContent  String?     @db.Text // SVG markup for this floor plan
   imageUrl    String?
   buildingId  String
@@ -133,9 +141,22 @@ model Apartment {
   floorId       String
   floor         Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
   floorPlanUrl  String?         // individual apartment floor plan image
+  images        ApartmentImage[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
   @@unique([floorId, number])
   @@map("apartments")
+}
+
+model ApartmentImage {
+  id          String    @id @default(uuid())
+  url         String
+  caption     String?
+  sortOrder   Int       @default(0)
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@map("apartment_images")
 }

@@ -82,6 +82,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const strokeColor = (form.get("strokeColor") as string) || DEFAULT_PROJECT_SETTINGS.strokeColor;
     const strokeWidth = parseInt((form.get("strokeWidth") as string) || String(DEFAULT_PROJECT_SETTINGS.strokeWidth), 10);
     const tooltipStyle = (form.get("tooltipStyle") as string) || "modern";
+    const tooltipShape = (form.get("tooltipShape") as string) || "rounded";
 
     await prisma.project.update({
       where: { id: params.projectId },
@@ -96,6 +97,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         strokeColor,
         strokeWidth,
         tooltipStyle,
+        tooltipShape,
       },
     });
     return json({ error: null, success: true });
