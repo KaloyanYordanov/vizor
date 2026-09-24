@@ -7,6 +7,14 @@ interface FilterBarProps {
   maxPrice?: number;
   currencySymbol?: string;
   onFilterChange: (filters: FilterValues) => void;
+  showRoomFilter?: boolean;
+  showPriceFilter?: boolean;
+  showStatusFilter?: boolean;
+  /** Pre-select initial filter values from embed config */
+  initialRooms?: number | null;
+  initialMinPrice?: number | null;
+  initialMaxPrice?: number | null;
+  initialStatuses?: string[];
 }
 
 export interface FilterValues {
@@ -16,12 +24,12 @@ export interface FilterValues {
   status: string[];
 }
 
-export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, currencySymbol = "€", onFilterChange }: FilterBarProps) {
+export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, currencySymbol = "€", onFilterChange, showRoomFilter = true, showPriceFilter = true, showStatusFilter = true, initialRooms = null, initialMinPrice = null, initialMaxPrice = null, initialStatuses }: FilterBarProps) {
   const { t } = useTranslation();
-  const [rooms, setRooms] = useState<number | null>(null);
-  const [priceMin, setPriceMin] = useState<number | null>(null);
-  const [priceMax, setPriceMax] = useState<number | null>(null);
-  const [statuses, setStatuses] = useState<string[]>(["AVAILABLE", "RESERVED", "SOLD"]);
+  const [rooms, setRooms] = useState<number | null>(initialRooms ?? null);
+  const [priceMin, setPriceMin] = useState<number | null>(initialMinPrice ?? null);
+  const [priceMax, setPriceMax] = useState<number | null>(initialMaxPrice ?? null);
+  const [statuses, setStatuses] = useState<string[]>(initialStatuses ?? ["AVAILABLE", "RESERVED", "SOLD"]);
 
   const handleStatusToggle = (status: string) => {
     const updated = statuses.includes(status)
@@ -50,11 +58,12 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, curre
   };
 
   const clearFilters = () => {
-    setRooms(null);
-    setPriceMin(null);
-    setPriceMax(null);
-    setStatuses(["AVAILABLE", "RESERVED", "SOLD"]);
-    onFilterChange({ rooms: null, minPrice: null, maxPrice: null, status: ["AVAILABLE", "RESERVED", "SOLD"] });
+    const defStatuses = initialStatuses ?? ["AVAILABLE", "RESERVED", "SOLD"];
+    setRooms(initialRooms ?? null);
+    setPriceMin(initialMinPrice ?? null);
+    setPriceMax(initialMaxPrice ?? null);
+    setStatuses(defStatuses);
+    onFilterChange({ rooms: initialRooms ?? null, minPrice: initialMinPrice ?? null, maxPrice: initialMaxPrice ?? null, status: defStatuses });
   };
 
   const statusOptions = [
@@ -68,6 +77,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, curre
       <div className="card-body">
         <div className="flex flex-wrap items-end gap-4">
           {/* Rooms filter */}
+          {showRoomFilter && (
           <div className="min-w-[120px]">
             <label className="label">{t("filter.rooms")}</label>
             <select
@@ -85,8 +95,11 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, curre
                 ))}
             </select>
           </div>
+          )}
 
           {/* Price range */}
+          {showPriceFilter && (
+          <>
           <div className="min-w-[130px]">
             <label className="label">{t("filter.minPriceCurrency", { currency: currencySymbol })}</label>
             <input
@@ -107,8 +120,11 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, curre
               onChange={(e) => handlePriceMaxChange(e.target.value)}
             />
           </div>
+          </>
+          )}
 
           {/* Status toggles */}
+          {showStatusFilter && (
           <div>
             <label className="label">{t("status.status")}</label>
             <div className="flex gap-2">
@@ -129,6 +145,7 @@ export function FilterBar({ minRooms = 1, maxRooms = 5, maxPrice = 500000, curre
               ))}
             </div>
           </div>
+          )}
 
           {/* Clear */}
           <button

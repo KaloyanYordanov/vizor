@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Link } from "@remix-run/react";
 import type { ApartmentStatus } from "@prisma/client";
 import { STATUS_UI } from "~/utils/colors";
@@ -25,8 +25,18 @@ interface ApartmentModalProps {
   /** Link to the dedicated apartment detail page */
   detailUrl?: string;
   /** Enable callback request form */  showRequestForm?: boolean;
+  /** Visibility flags (embed config) */
+  showPrice?: boolean;
+  showPricePerSqm?: boolean;
+  showRooms?: boolean;
+  showArea?: boolean;
+  showFloorPlan?: boolean;
+  showFeatures?: boolean;
+  showDescription?: boolean;
+  showShareButton?: boolean;
+  showDetailLink?: boolean;
   onClose: () => void;
-  onRequestSubmit?: (data: { name: string; email: string; phone: string; message: string }) => void;
+  onRequestSubmit?: (data: { name: string; email: string; phone: string; message: string }) => boolean | void | Promise<boolean | void>;
 }
 
 const statusConfig = STATUS_UI;
@@ -38,12 +48,22 @@ export function ApartmentModal({
   shareUrl,
   detailUrl,
   showRequestForm = true,
+  showPrice = true,
+  showPricePerSqm = true,
+  showRooms = true,
+  showArea = true,
+  showFloorPlan = true,
+  showFeatures = true,
+  showDescription = true,
+  showShareButton = true,
+  showDetailLink = true,
   onClose,
   onRequestSubmit,
 }: ApartmentModalProps) {
   const features = apartment.features ? JSON.parse(apartment.features) : {};
   const sc = statusConfig[apartment.status] || statusConfig.UNAVAILABLE;
   const { t } = useTranslation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Close on Escape
   useEffect(() => {
@@ -69,18 +89,25 @@ export function ApartmentModal({
   }, [shareUrl]);
 
   const handleFormSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const fd = new FormData(e.currentTarget);
-      onRequestSubmit?.({
-        name: fd.get("name") as string,
-        email: fd.get("email") as string,
-        phone: fd.get("phone") as string,
-        message: fd.get("message") as string,
-      });
-      e.currentTarget.reset();
+      if (isSubmitting) return;
+      const form = e.currentTarget;
+      const fd = new FormData(form);
+      setIsSubmitting(true);
+      try {
+        const succeeded = await onRequestSubmit?.({
+          name: fd.get("name") as string,
+          email: fd.get("email") as string,
+          phone: fd.get("phone") as string,
+          message: fd.get("message") as string,
+        });
+        if (succeeded !== false) form.reset();
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [onRequestSubmit]
+    [isSubmitting, onRequestSubmit]
   );
 
   return (
@@ -114,31 +141,39 @@ export function ApartmentModal({
         <div className="px-6 py-5 space-y-5">
           {/* Key metrics grid */}
           <div className="grid grid-cols-2 gap-3">
+            {showRooms && (
             <MetricCard
               label={t("apartment.rooms")}
               value={String(apartment.rooms)}
               icon="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             />
+            )}
+            {showArea && (
             <MetricCard
               label={t("apartment.area")}
               value={`${apartment.area} ${areaUnit}`}
               icon="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
             />
+            )}
+            {showPrice && (
             <MetricCard
               label={t("apartment.price")}
               value={apartment.price ? `${currencySymbol}${apartment.price.toLocaleString()}` : t("apartment.onRequest")}
               icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               highlight
             />
+            )}
+            {showPricePerSqm && (
             <MetricCard
               label={t("apartment.pricePerUnit", { unit: areaUnit })}
               value={apartment.pricePerSqm ? `${currencySymbol}${apartment.pricePerSqm.toLocaleString()}` : "—"}
               icon="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
             />
+            )}
           </div>
 
           {/* Apartment floor plan image */}
-          {apartment.floorPlanUrl && (
+          {showFloorPlan && apartment.floorPlanUrl && (
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t("apartment.floorPlan")}</h3>
               <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
@@ -152,7 +187,7 @@ export function ApartmentModal({
           )}
 
           {/* Description */}
-          {apartment.description && (
+          {showDescription && apartment.description && (
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{t("common.description")}</h3>
               <p className="text-sm text-gray-700 leading-relaxed">{apartment.description}</p>
@@ -160,7 +195,7 @@ export function ApartmentModal({
           )}
 
           {/* Features */}
-          {Object.keys(features).length > 0 && (
+          {showFeatures && Object.keys(features).length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t("apartment.features")}</h3>
               <div className="flex flex-wrap gap-2">
@@ -182,7 +217,7 @@ export function ApartmentModal({
           )}
 
           {/* Share link */}
-          {shareUrl && (
+          {showShareButton && shareUrl && (
             <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
               <svg className="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -202,7 +237,7 @@ export function ApartmentModal({
           )}
 
           {/* Request callback form */}
-          {detailUrl && (
+          {showDetailLink && detailUrl && (
             <Link
               to={detailUrl}
               className="block text-center text-sm text-brand-600 hover:text-brand-700 font-medium py-2.5 border border-brand-200 rounded-xl hover:bg-brand-50 transition-colors"
@@ -221,8 +256,8 @@ export function ApartmentModal({
                 </div>
                 <input name="phone" type="tel" placeholder={t("apartment.phone")} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent" />
                 <textarea name="message" rows={2} placeholder={t("apartment.messageOptional")} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none" />
-                <button type="submit" className="w-full bg-brand-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-brand-700 transition-colors">
-                  Send Request
+                <button disabled={isSubmitting} type="submit" className="w-full bg-brand-600 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-brand-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60">
+                  {isSubmitting ? t("common.loading") : t("apartment.sendRequest")}
                 </button>
               </form>
             </div>

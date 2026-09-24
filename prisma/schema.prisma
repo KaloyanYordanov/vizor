@@ -69,6 +69,7 @@ model Project {
   strokeWidth     Float      @default(2)
   tooltipStyle    String     @default("modern")
   tooltipShape    String     @default("rounded")
+  embedConfig     Json?      // Full embed configuration (EmbedConfig JSON)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 

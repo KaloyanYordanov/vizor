@@ -44,6 +44,14 @@ interface InteractiveFloorPlanProps {
   tooltipStyle?: "modern" | "minimal" | "detailed";
   /** Tooltip shape: rounded or rectangular */
   tooltipShape?: "rounded" | "rectangular";
+  /** Show/hide zoom +/- controls */
+  showZoomControls?: boolean;
+  /** Initial zoom scale (1 = 100%) */
+  initialZoom?: number;
+  /** Normal polygon fill opacity (0–1) */
+  polygonOpacity?: number;
+  /** Hover / selected polygon fill opacity (0–1) */
+  polygonHoverOpacity?: number;
   /** Currency & area units */
   currencySymbol?: string;
   areaUnit?: string;
@@ -69,6 +77,10 @@ export function InteractiveFloorPlan({
   colors = defaultColors,
   tooltipStyle = "modern",
   tooltipShape = "rounded",
+  showZoomControls = true,
+  initialZoom = 1,
+  polygonOpacity = 0.4,
+  polygonHoverOpacity = 0.6,
   currencySymbol = "€",
   areaUnit = "m²",
   className = "",
@@ -248,7 +260,7 @@ export function InteractiveFloorPlan({
   /** Image-based render with SVG polygon overlays */
   const renderImageBased = () => (
     <TransformWrapper
-      initialScale={1}
+      initialScale={initialZoom}
       minScale={0.5}
       maxScale={4}
       wheel={{ step: 0.1 }}
@@ -258,6 +270,7 @@ export function InteractiveFloorPlan({
       {({ zoomIn, zoomOut, resetTransform }) => (
         <>
           {/* Zoom controls */}
+          {showZoomControls && (
           <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
             <button
               onClick={() => zoomIn()}
@@ -285,6 +298,7 @@ export function InteractiveFloorPlan({
               ↺
             </button>
           </div>
+          )}
 
           <TransformComponent
             wrapperClass="!w-full"
@@ -309,7 +323,7 @@ export function InteractiveFloorPlan({
                     <polygon
                       key={apt.id}
                       points={pointsToSvg(apt.polygonData!)}
-                      fill={getStatusColor(apt.status, visible ? (isSelected ? 0.55 : 0.35) : 0.1)}
+                      fill={getStatusColor(apt.status, visible ? (isSelected ? polygonHoverOpacity : polygonOpacity) : 0.1)}
                       stroke={isSelected ? "#2563eb" : getStatusStroke(apt.status)}
                       strokeWidth={isSelected ? 0.6 : 0.3}
                       className="transition-all duration-200"
@@ -335,7 +349,7 @@ export function InteractiveFloorPlan({
   /** Legacy SVG-based render */
   const renderSvgBased = () => (
     <TransformWrapper
-      initialScale={1}
+      initialScale={initialZoom}
       minScale={0.5}
       maxScale={4}
       wheel={{ step: 0.1 }}
@@ -344,6 +358,7 @@ export function InteractiveFloorPlan({
     >
       {({ zoomIn, zoomOut, resetTransform }) => (
         <>
+          {showZoomControls && (
           <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
             <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomIn")}>
               <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -359,6 +374,7 @@ export function InteractiveFloorPlan({
               ↺
             </button>
           </div>
+          )}
           <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
             <LegacySvgFloorPlan
               svgContent={svgContent!}
@@ -367,6 +383,7 @@ export function InteractiveFloorPlan({
               selectedApartmentId={selectedApartmentId}
               filterStatus={filterStatus}
               colors={colors}
+              polygonOpacity={polygonOpacity}
               onTooltipShow={(apt, x, y) =>
                 setTooltip({ visible: true, x, y, apartment: apt })
               }
@@ -387,9 +404,10 @@ export function InteractiveFloorPlan({
     <div ref={containerRef} className={`relative overflow-hidden rounded-lg ${className}`}>
       {hasImagePolygons ? renderImageBased() : hasImage ? (
         // Image without polygons — just show the image with zoom
-        <TransformWrapper initialScale={1} minScale={0.5} maxScale={4}>
+        <TransformWrapper initialScale={initialZoom} minScale={0.5} maxScale={4}>
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
+              {showZoomControls && (
               <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
                 <button onClick={() => zoomIn()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white" title={t("zoom.zoomIn")}>
                   <svg className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -403,6 +421,7 @@ export function InteractiveFloorPlan({
                 </button>
                 <button onClick={() => resetTransform()} className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-md hover:bg-white text-xs font-medium text-gray-700" title={t("zoom.resetZoom")}>↺</button>
               </div>
+              )}
               <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                 <img src={imageUrl} alt={t("apartment.floorPlan")} className="block w-full h-auto" draggable={false} />
               </TransformComponent>
@@ -431,6 +450,7 @@ function LegacySvgFloorPlan({
   selectedApartmentId,
   filterStatus,
   colors,
+  polygonOpacity = 0.4,
   onTooltipShow,
   onTooltipHide,
   containerRef,
@@ -440,7 +460,15 @@ function LegacySvgFloorPlan({
   onApartmentClick?: (apartment: ApartmentData) => void;
   selectedApartmentId?: string | null;
   filterStatus?: string[];
-  colors: typeof defaultColors;
+  colors: {
+    available: string;
+    reserved: string;
+    sold: string;
+    unavailable: string;
+    stroke: string;
+    strokeWidth: number;
+  };
+  polygonOpacity?: number;
   onTooltipShow: (apt: ApartmentData, x: number, y: number) => void;
   onTooltipHide: () => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -448,10 +476,10 @@ function LegacySvgFloorPlan({
   const svgRef = useRef<HTMLDivElement>(null);
 
   const statusFillColors: Record<string, string> = {
-    AVAILABLE: getStatusColorUtil("AVAILABLE", colors, 0.25),
-    RESERVED: getStatusColorUtil("RESERVED", colors, 0.25),
-    SOLD: getStatusColorUtil("SOLD", colors, 0.25),
-    UNAVAILABLE: getStatusColorUtil("UNAVAILABLE", colors, 0.25),
+    AVAILABLE: getStatusColorUtil("AVAILABLE", colors, polygonOpacity),
+    RESERVED: getStatusColorUtil("RESERVED", colors, polygonOpacity),
+    SOLD: getStatusColorUtil("SOLD", colors, polygonOpacity),
+    UNAVAILABLE: getStatusColorUtil("UNAVAILABLE", colors, polygonOpacity),
   };
 
   // Attach event handlers to SVG elements

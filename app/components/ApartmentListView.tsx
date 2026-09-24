@@ -20,6 +20,18 @@ interface ApartmentListViewProps {
   currencySymbol?: string;
   areaUnit?: string;
   className?: string;
+  /** Embed config overrides */
+  defaultMode?: "grid" | "table";
+  defaultSort?: "number" | "price" | "area" | "rooms" | "floor";
+  defaultSortDir?: "asc" | "desc";
+  /** Max results per page (undefined = show all) */
+  pageSize?: number;
+  showNumber?: boolean;
+  showFloor?: boolean;
+  showRooms?: boolean;
+  showArea?: boolean;
+  showPrice?: boolean;
+  showStatus?: boolean;
 }
 
 type ViewMode = "grid" | "table";
@@ -34,16 +46,27 @@ export function ApartmentListView({
   currencySymbol = "€",
   areaUnit = "m²",
   className = "",
+  defaultMode = "grid",
+  defaultSort = "number",
+  defaultSortDir = "asc",
+  pageSize,
+  showNumber = true,
+  showFloor = true,
+  showRooms = true,
+  showArea = true,
+  showPrice = true,
+  showStatus = true,
 }: ApartmentListViewProps) {
   const { t } = useTranslation();
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [sortField, setSortField] = useState<SortField>("number");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultMode);
+  const [sortField, setSortField] = useState<SortField>(defaultSort);
+  const [sortDir, setSortDir] = useState<SortDir>(defaultSortDir);
   const [filterStatus, setFilterStatus] = useState<string[]>(["AVAILABLE", "RESERVED", "SOLD", "UNAVAILABLE"]);
   const [filterRooms, setFilterRooms] = useState<number | null>(null);
   const [filterMinPrice, setFilterMinPrice] = useState<number | null>(null);
   const [filterMaxPrice, setFilterMaxPrice] = useState<number | null>(null);
   const [filterFloor, setFilterFloor] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   // Compute unique values for filter options
   const roomOptions = useMemo(
@@ -93,6 +116,8 @@ export function ApartmentListView({
 
     return result;
   }, [apartments, filterStatus, filterRooms, filterFloor, filterMinPrice, filterMaxPrice, sortField, sortDir]);
+
+  const displayed = pageSize != null && !showAll ? filtered.slice(0, pageSize) : filtered;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -249,8 +274,13 @@ export function ApartmentListView({
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map((apt) => {
+          {displayed.map((apt) => {
             const sc = statusConfig[apt.status] || statusConfig.UNAVAILABLE;
+            const stats = [
+              showRooms ? { label: t("apartment.rooms"), value: String(apt.rooms) } : null,
+              showArea  ? { label: t("apartment.area"),  value: `${apt.area}${areaUnit}` } : null,
+              showPrice ? { label: t("apartment.price"), value: apt.price ? `${currencySymbol}${(apt.price / 1000).toFixed(0)}k` : "—" } : null,
+            ].filter(Boolean) as { label: string; value: string }[];
             return (
               <button
                 key={apt.id}
@@ -259,34 +289,32 @@ export function ApartmentListView({
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
+                    {showNumber && (
                     <p className="font-bold text-gray-900 group-hover:text-brand-700 transition-colors">
                       {t("apartment.apt")} {apt.number}
                     </p>
+                    )}
                     <p className="text-xs text-gray-400">
-                      {apt.buildingName} · {t("floor.floorN", { n: apt.floorNumber })}
+                      {apt.buildingName}{showFloor && ` · ${t("floor.floorN", { n: apt.floorNumber })}`}
                     </p>
                   </div>
+                  {showStatus && (
                   <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${sc.bg} ${sc.border} ${sc.text}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                     {sc.label}
                   </span>
+                  )}
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">{t("apartment.rooms")}</p>
-                    <p className="text-sm font-semibold">{apt.rooms}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">{t("apartment.area")}</p>
-                    <p className="text-sm font-semibold">{apt.area}{areaUnit}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg py-1.5">
-                    <p className="text-xs text-gray-500">{t("apartment.price")}</p>
-                    <p className="text-sm font-semibold">
-                      {apt.price ? `${currencySymbol}${(apt.price / 1000).toFixed(0)}k` : "—"}
-                    </p>
-                  </div>
+                {stats.length > 0 && (
+                <div className="grid gap-2 text-center" style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}>
+                  {stats.map((s) => (
+                    <div key={s.label} className="bg-gray-50 rounded-lg py-1.5">
+                      <p className="text-xs text-gray-500">{s.label}</p>
+                      <p className="text-sm font-semibold">{s.value}</p>
+                    </div>
+                  ))}
                 </div>
+                )}
               </button>
             );
           })}
@@ -298,40 +326,52 @@ export function ApartmentListView({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
+                  {showNumber && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("number")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("common.number")} <SortIcon field="number" />
                     </button>
                   </th>
+                  )}
+                  {showFloor && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("floor")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("floor.floor")} <SortIcon field="floor" />
                     </button>
                   </th>
+                  )}
+                  {showRooms && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("rooms")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("apartment.rooms")} <SortIcon field="rooms" />
                     </button>
                   </th>
+                  )}
+                  {showArea && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("area")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("apartment.area")} <SortIcon field="area" />
                     </button>
                   </th>
+                  )}
+                  {showPrice && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("price")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("apartment.price")} <SortIcon field="price" />
                     </button>
                   </th>
+                  )}
+                  {showStatus && (
                   <th className="px-4 py-2.5 text-left">
                     <button onClick={() => handleSort("status")} className="font-medium text-gray-500 hover:text-gray-700 flex items-center">
                       {t("status.status")} <SortIcon field="status" />
                     </button>
                   </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((apt) => {
+                {displayed.map((apt) => {
                   const sc = statusConfig[apt.status] || statusConfig.UNAVAILABLE;
                   return (
                     <tr
@@ -339,19 +379,19 @@ export function ApartmentListView({
                       onClick={() => onApartmentClick?.(apt)}
                       className="border-b border-gray-50 hover:bg-brand-50/30 cursor-pointer transition-colors"
                     >
-                      <td className="px-4 py-2.5 font-medium text-gray-900">{t("apartment.apt")} {apt.number}</td>
-                      <td className="px-4 py-2.5 text-gray-500">{apt.floorNumber}</td>
-                      <td className="px-4 py-2.5">{apt.rooms}</td>
-                      <td className="px-4 py-2.5">{apt.area} {areaUnit}</td>
-                      <td className="px-4 py-2.5 font-medium">
-                        {apt.price ? `${currencySymbol}${apt.price.toLocaleString()}` : "—"}
-                      </td>
+                      {showNumber && <td className="px-4 py-2.5 font-medium text-gray-900">{t("apartment.apt")} {apt.number}</td>}
+                      {showFloor  && <td className="px-4 py-2.5 text-gray-500">{apt.floorNumber}</td>}
+                      {showRooms  && <td className="px-4 py-2.5">{apt.rooms}</td>}
+                      {showArea   && <td className="px-4 py-2.5">{apt.area} {areaUnit}</td>}
+                      {showPrice  && <td className="px-4 py-2.5 font-medium">{apt.price ? `${currencySymbol}${apt.price.toLocaleString()}` : "—"}</td>}
+                      {showStatus && (
                       <td className="px-4 py-2.5">
                         <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${sc.bg} ${sc.border} ${sc.text}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
                         </span>
                       </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -359,6 +399,18 @@ export function ApartmentListView({
             </table>
           </div>
         </div>
+      )}
+      {/* Pagination footer */}
+      {pageSize != null && !showAll && filtered.length > pageSize && (
+        <p className="text-center text-sm text-gray-500 pt-2">
+          {t("filter.nOfTotal", { n: pageSize, total: filtered.length })}{" "}
+          <button
+            onClick={() => setShowAll(true)}
+            className="text-brand-600 hover:text-brand-700 font-medium"
+          >
+            {t("common.showAll") ?? "Show all"}
+          </button>
+        </p>
       )}
     </div>
   );

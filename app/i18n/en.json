@@ -273,6 +273,7 @@
     "legend": "Legend",
     "startingFrom": "Starting from",
     "thankYouRequest": "Thank you! Your request has been submitted.",
+    "requestFailed": "We couldn't submit your request. Please try again.",
     "roomsSeparator": " rooms · ",
     "backToList": "Back to list",
     "backToProject": "Back to project"

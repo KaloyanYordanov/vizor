@@ -4,6 +4,7 @@ import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PreviewSettings from "~/routes/_components/ProjectSettingsPreview";
+import EmbedSettings from "~/routes/_components/EmbedSettings";
 import { prisma } from "~/lib/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { PageHeader } from "~/components/ui";
@@ -16,7 +17,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const project = await prisma.project.findUniqueOrThrow({
     where: { id: params.projectId },
     include: {
-      company: { select: { name: true } },
+      company: { select: { name: true, slug: true } },
       buildings: {
         include: { _count: { select: { floors: true } } },
         orderBy: { sortOrder: "asc" },
@@ -28,7 +29,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Forbidden", { status: 403 });
   }
 
-  return json({ project });
+  const url = new URL(request.url);
+  const baseUrl = `${url.protocol}//${url.host}`;
+
+  return json({ project, baseUrl });
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -103,11 +107,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return json({ error: null, success: true });
   }
 
+  if (intent === "update-embed") {
+    const embedConfigRaw = form.get("embedConfig") as string;
+    let embedConfig = null;
+    try {
+      embedConfig = JSON.parse(embedConfigRaw);
+    } catch {
+      return json({ error: "Invalid embed configuration" }, { status: 400 });
+    }
+
+    await prisma.project.update({
+      where: { id: params.projectId },
+      data: { embedConfig },
+    });
+    return json({ error: null, success: true });
+  }
+
   return json({ error: "Unknown action" }, { status: 400 });
 }
 
 export default function EditProjectPage() {
-  const { project } = useLoaderData<typeof loader>();
+  const { project, baseUrl } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { t } = useTranslation();
 
@@ -170,6 +190,25 @@ export default function EditProjectPage() {
               <PreviewSettings project={project} />
 
               <button type="submit" className="btn-primary">{t("projects.saveSettings")}</button>
+            </Form>
+          </div>
+        </details>
+      </div>
+
+      {/* Embed Settings */}
+      <div className="card">
+        <details>
+          <summary className="card-header cursor-pointer select-none">
+            <span className="font-semibold text-sm">Embed Settings</span>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Configure how this project appears when embedded on external websites. Includes layout, theme, visibility, behavior, and branding.
+            </p>
+          </summary>
+          <div className="card-body">
+            <Form method="post" className="space-y-5">
+              <input type="hidden" name="intent" value="update-embed" />
+              <EmbedSettings project={project} baseUrl={baseUrl} />
+              <button type="submit" className="btn-primary">Save Embed Settings</button>
             </Form>
           </div>
         </details>

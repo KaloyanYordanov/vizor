@@ -57,6 +57,10 @@ npx tsx prisma/seed.ts
 npm run dev
 ```
 
+For an existing deployment created before embed configuration was added, apply
+`prisma/manual-migrations/20260924_add_project_embed_config.sql` before deploying
+the updated application. The script is idempotent and does not reset existing data.
+
 ### Default Credentials
 | Role | Email | Password |
 |------|-------|----------|
