@@ -142,6 +142,9 @@ model Apartment {
   floorId       String
   floor         Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
   floorPlanUrl  String?         // individual apartment floor plan image
+  visualisationPlan VisualisationPlan?
+  visualisationBatches VisualisationBatch[]
+  visualisationPublication ApartmentVisualisationPublication?
   images        ApartmentImage[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -160,4 +163,135 @@ model ApartmentImage {
   createdAt   DateTime  @default(now())
 
   @@map("apartment_images")
+}
+
+// Private visualisation data is served only by the dedicated scoped routes.
+model VisualisationPlan {
+  id          String              @id @default(uuid())
+  apartmentId String              @unique
+  apartment   Apartment           @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  fingerprint String
+  imageKey    String
+  width       Int
+  height      Int
+  revision    Int                 @default(1)
+  rooms       VisualisationRoom[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+// Legacy room records retained for historical data only; new jobs are apartment-scoped.
+model VisualisationRoom {
+  id          String                    @id @default(uuid())
+  planId      String
+  plan        VisualisationPlan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+  label       String
+  type        String
+  region      Json
+  revision    Int                       @default(1)
+  archived    Boolean                   @default(false)
+  jobs        VisualisationJob[]
+  publication VisualisationPublication?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+
+  @@index([planId, archived])
+}
+
+model VisualisationBatch {
+  id              String             @id @default(uuid())
+  apartmentId     String
+  apartment       Apartment          @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  companyId       String
+  createdById     String
+  clientRequestId String
+  requestHash     String
+  styleId         String
+  settings        Json
+  retryOfId       String?
+  jobs            VisualisationJob[]
+  createdAt       DateTime           @default(now())
+
+  @@unique([apartmentId, clientRequestId])
+  @@index([companyId, createdAt])
+}
+
+enum VisualisationJobState {
+  QUEUED
+  PREPARING
+  GENERATING
+  SAVING
+  SUCCEEDED
+  FAILED
+  SUPERSEDED
+}
+
+// The job table is itself a durable Postgres queue, claimed with SKIP LOCKED.
+model VisualisationJob {
+  id                   String                             @id @default(uuid())
+  batchId              String
+  batch                VisualisationBatch                 @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  roomId               String?
+  room                 VisualisationRoom?                 @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  kind                 String                             @default("IMAGE")
+  state                VisualisationJobState              @default(QUEUED)
+  input                Json
+  result               Json?
+  outputKey            String?
+  thumbnailKey         String?
+  width                Int?
+  height               Int?
+  errorCode            String?
+  providerRequestId    String?
+  claimToken           String?
+  leaseUntil           DateTime?
+  submittedAt          DateTime?
+  finishedAt           DateTime?
+  createdAt            DateTime                           @default(now())
+  updatedAt            DateTime                           @updatedAt
+  publication          VisualisationPublication?
+  apartmentPublication ApartmentVisualisationPublication?
+
+  @@unique([batchId, roomId])
+  @@index([state, createdAt])
+}
+
+// Legacy publication records retained for old URLs and migration history.
+model VisualisationPublication {
+  roomId        String            @id
+  room          VisualisationRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  jobId         String            @unique
+  job           VisualisationJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  publishedById String
+  publishedAt   DateTime          @default(now())
+}
+
+model VisualisationAudit {
+  id          String   @id @default(uuid())
+  actorId     String
+  apartmentId String
+  jobId       String
+  action      String
+  createdAt   DateTime @default(now())
+}
+
+// No job FK: deleting an apartment must not refund accepted provider requests.
+model VisualisationUsage {
+  jobId      String    @id
+  companyId  String
+  kind       String
+  releasedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([companyId, kind, createdAt])
+}
+
+// The only active publication for an apartment, independent of legacy room data.
+model ApartmentVisualisationPublication {
+  apartmentId   String           @id
+  apartment     Apartment        @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  jobId         String           @unique
+  job           VisualisationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  publishedById String
+  publishedAt   DateTime         @default(now())
 }

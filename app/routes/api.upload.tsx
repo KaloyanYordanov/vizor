@@ -1,12 +1,14 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { requireUser } from "~/lib/auth.server";
+import { requireRole } from "~/lib/auth.server";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { randomUUID } from "crypto";
 
 export async function action({ request }: ActionFunctionArgs) {
-  await requireUser(request);
+  await requireRole(request, ["SUPER_ADMIN", "COMPANY_ADMIN"]);
+  const origin = process.env.APP_ORIGIN || new URL(request.url).origin;
+  if (request.headers.get("Origin") !== origin) return json({error:"Forbidden"},{status:403});
 
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
@@ -30,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "File too large. Max 10MB" }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop() || "png";
+  const ext = ({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/svg+xml":"svg"} as Record<string,string>)[file.type];
   const filename = `${randomUUID()}.${ext}`;
   const uploadDir = join(process.cwd(), "public", "uploads");
 

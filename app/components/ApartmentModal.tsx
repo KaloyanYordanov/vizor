@@ -1,3 +1,4 @@
+import { ApartmentVisualisationGallery } from "~/components/visualisations/ApartmentVisualisationGallery";
 import { useEffect, useCallback, useState } from "react";
 import { Link } from "@remix-run/react";
 import type { ApartmentStatus } from "@prisma/client";
@@ -30,6 +31,7 @@ interface ApartmentModalProps {
   showPricePerSqm?: boolean;
   showRooms?: boolean;
   showArea?: boolean;
+  showVisualisations?: boolean;
   showFloorPlan?: boolean;
   showFeatures?: boolean;
   showDescription?: boolean;
@@ -52,6 +54,7 @@ export function ApartmentModal({
   showPricePerSqm = true,
   showRooms = true,
   showArea = true,
+  showVisualisations = true,
   showFloorPlan = true,
   showFeatures = true,
   showDescription = true,
@@ -173,6 +176,7 @@ export function ApartmentModal({
           </div>
 
           {/* Apartment floor plan image */}
+          {showVisualisations && <ApartmentVisualisationGallery apartmentId={apartment.id} />}
           {showFloorPlan && apartment.floorPlanUrl && (
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t("apartment.floorPlan")}</h3>

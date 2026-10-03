@@ -1,8 +1,9 @@
+import { ApartmentPlanUpload } from "~/components/visualisations/ApartmentPlanUpload";
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useFetcher } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
-import { requireUser } from "~/lib/auth.server";
+import { requireRole } from "~/lib/auth.server";
 import { PageHeader } from "~/components/ui";
 import type { ApartmentStatus } from "@prisma/client";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ const APARTMENT_STATUSES: string[] = ["AVAILABLE", "RESERVED", "SOLD", "UNAVAILA
 export const meta: MetaFunction = () => [{ title: "Edit Apartment | Vizor Admin" }];
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const user = await requireUser(request);
+  const user = await requireRole(request, ["SUPER_ADMIN", "COMPANY_ADMIN"]);
   const apartment = await prisma.apartment.findUniqueOrThrow({
     where: { id: params.apartmentId },
     include: {
@@ -30,7 +31,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     },
   });
 
-  if (user.role !== "SUPER_ADMIN" && apartment.floor.building.project.companyId !== user.companyId) {
+  if (apartment.floor.buildingId !== params.buildingId || (user.role !== "SUPER_ADMIN" && apartment.floor.building.project.companyId !== user.companyId)) {
     throw new Response("Forbidden", { status: 403 });
   }
 
@@ -44,14 +45,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  if (request.headers.get("Origin") !== (process.env.APP_ORIGIN || new URL(request.url).origin)) throw new Response("Forbidden", {status:403});
+  const user = await requireRole(request, ["SUPER_ADMIN", "COMPANY_ADMIN"]);
   const form = await request.formData();
 
   const apartment = await prisma.apartment.findUniqueOrThrow({
     where: { id: params.apartmentId },
     include: { floor: { include: { building: { include: { project: true } } } } },
   });
-  if (user.role !== "SUPER_ADMIN" && apartment.floor.building.project.companyId !== user.companyId) {
+  if (apartment.floor.buildingId !== params.buildingId || (user.role !== "SUPER_ADMIN" && apartment.floor.building.project.companyId !== user.companyId)) {
     return json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -81,7 +83,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   // Delete apartment image
   if (intent === "delete-image") {
     const imageId = form.get("imageId") as string;
-    await prisma.apartmentImage.delete({ where: { id: imageId } });
+    await prisma.apartmentImage.deleteMany({ where: { id: imageId, apartmentId: apartment.id } });
     return json({ error: null, success: true, message: "Image deleted" });
   }
 
@@ -144,6 +146,7 @@ export default function EditApartmentPage() {
         description={`${bldg.project.company.name} → ${bldg.project.name} → ${bldg.name} → ${t("floor.floorN", { n: apartment.floor.number })}`}
         actions={
           <div className="flex items-center gap-2">
+            <Link className="btn-primary btn-sm" to={`/admin/buildings/${buildingId}/visualisations?floor=${apartment.floorId}&apartment=${apartment.id}`}>{t("visualisations.title")}</Link>
             {/* Prev/Next navigation */}
             <span className="text-xs text-gray-400">{currentIdx}/{siblingCount}</span>
             {prevApt ? (
@@ -284,7 +287,7 @@ export default function EditApartmentPage() {
                   </div>
                   <div>
                     <label className="label">{t("apartment.floorPlanUrlLabel")}</label>
-                    <input name="floorPlanUrl" className="input" defaultValue={apartment.floorPlanUrl || ""} placeholder="https://..." />
+                    <ApartmentPlanUpload defaultValue={apartment.floorPlanUrl || ""} />
                     <p className="text-xs text-gray-400 mt-1">{t("apartment.floorPlanUrlHelp")}</p>
                   </div>
                   <div>

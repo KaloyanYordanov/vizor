@@ -326,3 +326,9 @@ npm test
 ## License
 
 ISC
+
+## Photorealistic interior visualisations
+
+Admins select an apartment, choose one of six interior styles with realistic preview images and generate one image from the full apartment plan. Images stay private until reviewed and published to the apartment gallery. Generation defaults to **1024×1024, medium quality**, configurable with `VISUALISATION_IMAGE_SIZE` and `VISUALISATION_IMAGE_QUALITY`.
+
+This feature requires the new database migrations, `OPENAI_API_KEY`, private persistent storage and a separate worker (`npm run visualisations:worker`). See [setup, migration and operations instructions](docs/visualisations-operations.md) before enabling it on an existing database. All provider settings are snapshotted per batch; failed generations can be retried explicitly.

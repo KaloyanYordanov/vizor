@@ -32,6 +32,8 @@ interface ImagePolygonMapperProps {
   uploadLabel?: string;
   /** Description text shown above the upload button */
   description?: string;
+  /** Called when the linked item for the selected polygon changes */
+  onSelectedItemChange?: (itemId: string | null) => void;
 }
 
 /**
@@ -50,6 +52,7 @@ export function ImagePolygonMapper({
   accept = "image/png,image/jpeg,image/webp",
   uploadLabel = "Upload Image",
   description,
+  onSelectedItemChange,
 }: ImagePolygonMapperProps) {
   const imageFetcher = useFetcher();
   const polygonFetcher = useFetcher();
@@ -130,6 +133,7 @@ export function ImagePolygonMapper({
             apartments={items}
             itemLabel={itemLabel}
             onPolygonsChange={setPolygons}
+            onSelectedItemChange={onSelectedItemChange}
           />
           <div className="flex items-center gap-3">
             <button

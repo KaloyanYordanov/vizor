@@ -2,20 +2,21 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remi
 import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useNavigation, useSubmit, useFetcher } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
-import { requireUser } from "~/lib/auth.server";
+import { requireRole } from "~/lib/auth.server";
 import { PageHeader, StatusBadge } from "~/components/ui";
 import type { ApartmentStatus, FloorType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { type DrawnPolygon } from "~/components/PolygonEditor";
 import { ImagePolygonMapper } from "~/components/ImagePolygonMapper";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getFloorOverlayStatus } from "~/utils/colors";
 
 export const meta: MetaFunction = () => [{ title: "Edit Building | Vizor Admin" }];
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
-    const user = await requireUser(request);
+    const user = await requireRole(request, ["SUPER_ADMIN", "COMPANY_ADMIN"]);
     const building = await prisma.building.findUniqueOrThrow({
       where: { id: params.buildingId },
       include: {
@@ -42,7 +43,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  const user = await requireUser(request);
+  if (request.headers.get("Origin") !== (process.env.APP_ORIGIN || new URL(request.url).origin)) throw new Response("Forbidden", {status:403});
+  const user = await requireRole(request, ["SUPER_ADMIN", "COMPANY_ADMIN"]);
   const form = await request.formData();
   const intent = form.get("intent") as string;
 
@@ -53,6 +55,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (user.role !== "SUPER_ADMIN" && building.project.companyId !== user.companyId) {
     return json({ error: "Forbidden" }, { status: 403 });
   }
+
+  for (const field of ["floorId", "sourceFloorId", "targetFloorId"]) {
+    const id = form.get(field);
+    if (typeof id === "string" && id && !await prisma.floor.findFirst({where:{id,buildingId:building.id},select:{id:true}})) return json({error:"Forbidden"},{status:403});
+  }
+  const aptId = form.get("aptId");
+  if (typeof aptId === "string" && aptId && !await prisma.apartment.findFirst({where:{id:aptId,floor:{buildingId:building.id}},select:{id:true}})) return json({error:"Forbidden"},{status:403});
 
   // Update building
   if (intent === "update-building") {
@@ -192,6 +201,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     try {
       const polygons: Array<{ apartmentId: string; points: Array<{ x: number; y: number }> }> = JSON.parse(polygonsJson);
 
+      const scopedIds = await prisma.apartment.findMany({where:{floorId:String(form.get("floorId")),floor:{buildingId:building.id}},select:{id:true}});
+      if (polygons.some(p => p.apartmentId && !scopedIds.some(a => a.id === p.apartmentId))) return json({error:"Forbidden"},{status:403});
       // Clear existing polygons for all apartments on this floor
       const floorId = form.get("floorId") as string;
       await prisma.apartment.updateMany({
@@ -290,13 +301,14 @@ export default function EditBuildingPage() {
         title={building.name}
         description={`${building.project.company.name} → ${building.project.name}`}
         actions={
+          <div className="flex flex-wrap gap-2"><Link className="btn-primary btn-sm" to={`/admin/buildings/${building.id}/visualisations`}>{t("visualisations.title")}</Link>
           <Link
             to={`/view/${building.project.company.slug}/${building.project.slug}?building=${building.slug}`}
             className="btn-secondary btn-sm"
             target="_blank"
           >
             {t("building.previewLink")}
-          </Link>
+          </Link></div>
         }
       />
 
@@ -407,7 +419,7 @@ function BuildingImageSection({ building }: { building: any }) {
       building.floors.map((f: any) => ({
         id: f.id,
         number: f.label || t("floor.floorN", { n: f.number }),
-        status: "AVAILABLE",
+        status: getFloorOverlayStatus(f.apartments),
       })),
     [building.floors]
   );
@@ -466,8 +478,9 @@ function FloorCard({
 }) {
   const { t } = useTranslation();
   const submit = useSubmit();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{message?: string; error?: string}>();
   const floorImageUrl: string | null = floor.imageUrl || null;
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
 
   const apartmentItems = useMemo(
     () =>
@@ -516,6 +529,16 @@ function FloorCard({
           <p className="text-xs text-gray-500">{t("floor.nApartments", { n: floor.apartments.length })}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            className="btn-secondary btn-sm"
+            to={`/admin/buildings/${buildingId}/visualisations?floor=${encodeURIComponent(floor.id)}${
+              selectedApartmentId
+                ? `&apartment=${encodeURIComponent(selectedApartmentId)}`
+                : ""
+            }`}
+          >
+            {t("visualisations.title")}
+          </Link>
           <fetcher.Form method="post" className="inline-block">
             <input type="hidden" name="intent" value="update-floor-type" />
             <input type="hidden" name="floorId" value={floor.id} />
@@ -600,6 +623,7 @@ function FloorCard({
               polygonSaveFields={{ floorId: floor.id }}
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
               uploadLabel={t("floor.uploadFloorPlanImage")}
+              onSelectedItemChange={setSelectedApartmentId}
             />
           </div>
         </details>

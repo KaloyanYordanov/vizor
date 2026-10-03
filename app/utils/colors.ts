@@ -36,6 +36,22 @@ export const DEFAULT_PROJECT_SETTINGS = {
 };
 
 /**
+ * Reduce a floor's apartment statuses to the status used by building-level
+ * overlays. A partially available floor is represented as RESERVED, while a
+ * floor without any available apartments is represented as SOLD.
+ */
+export function getFloorOverlayStatus(
+  apartments: Array<{ status: string }>,
+): keyof typeof STATUS_HEX {
+  const total = apartments.length;
+  const available = apartments.filter((apartment) => apartment.status === "AVAILABLE").length;
+
+  if (total === 0 || available === total) return "AVAILABLE";
+  if (available === 0) return "SOLD";
+  return "RESERVED";
+}
+
+/**
  * Tailwind-class config for status badges / cards.
  * Keyed by uppercase status string so usage is `STATUS_UI[apt.status]`.
  */

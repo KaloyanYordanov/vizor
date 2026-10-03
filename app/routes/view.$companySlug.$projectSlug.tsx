@@ -1,3 +1,4 @@
+import { ApartmentVisualisationGallery } from "~/components/visualisations/ApartmentVisualisationGallery";
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useSearchParams, Outlet, useOutlet } from "@remix-run/react";
@@ -560,14 +561,14 @@ export default function ProjectViewer() {
                     setShowModal(false);
                   }}
                   className={`font-medium ${
-                    !selectedFloorNumber
+                    selectedFloorNumber === null
                       ? "text-brand-600"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {building?.name || t("building.building")}
                 </button>
-                {selectedFloorNumber && (
+                {selectedFloorNumber !== null && (
                   <>
                     <span className="text-gray-300">›</span>
                     <span className="font-medium text-brand-600">
@@ -581,7 +582,7 @@ export default function ProjectViewer() {
 
               {/* Floor plan area */}
               <div className="card p-0 overflow-hidden">
-                {!selectedFloorNumber && building?.imageUrl && building?.floorsPolygonData ? (
+                {selectedFloorNumber === null && building?.imageUrl && building?.floorsPolygonData ? (
                   <div className="p-4">
                     <BuildingFloorSelector
                       imageUrl={building.imageUrl}
@@ -615,7 +616,7 @@ export default function ProjectViewer() {
                 ) : (
                   <div className="flex items-center justify-center h-64 text-gray-400 p-4">
                     <p>
-                      {!selectedFloorNumber
+                      {selectedFloorNumber === null
                         ? t("viewer.noBuildingVisualization")
                         : t("floor.noFloorPlan")}
                     </p>
@@ -624,7 +625,7 @@ export default function ProjectViewer() {
               </div>
 
               {/* Floor selector */}
-              {showFloorSelector && !selectedFloorNumber && building && (
+              {showFloorSelector && selectedFloorNumber === null && building && (
                 <div className="card">
                   <div className="card-header">
                     <h3 className="text-sm font-semibold">{t("floor.selectFloor")}</h3>
@@ -718,6 +719,7 @@ export default function ProjectViewer() {
                         )}
                       </div>
 
+                      {(!isEmbed || ecApt?.showVisualisations !== false) && <ApartmentVisualisationGallery apartmentId={selectedApartment.id} />}
                       {/* Floor plan image */}
                       {(!isEmbed || ecApt?.showFloorPlan !== false) && selectedApartment.floorPlanUrl && (
                         <div>
@@ -943,6 +945,7 @@ export default function ProjectViewer() {
           showPricePerSqm={!isEmbed || ecApt?.showPricePerSqm !== false}
           showRooms={!isEmbed || ecApt?.showRooms !== false}
           showArea={!isEmbed || ecApt?.showArea !== false}
+          showVisualisations={!isEmbed || ecApt?.showVisualisations !== false}
           showFloorPlan={!isEmbed || ecApt?.showFloorPlan !== false}
           showFeatures={!isEmbed || ecApt?.showFeatures !== false}
           showDescription={!isEmbed || ecApt?.showDescription !== false}

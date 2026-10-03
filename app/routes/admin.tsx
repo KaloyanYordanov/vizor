@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData, useLocation } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef } from "react";
 import { requireUser } from "~/lib/auth.server";
 import { prisma } from "~/lib/db.server";
 import { LanguageSwitcher } from "~/components/LanguageSwitcher";
@@ -37,7 +38,12 @@ export default function AdminLayout() {
   const { user, projects } = useLoaderData<typeof loader>();
   const { t } = useTranslation();
   const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
   const isProjectsActive = location.pathname.startsWith("/admin/projects") || location.pathname.startsWith("/admin/buildings");
+
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [location.pathname]);
 
   const navItems = allNavItems.filter(
     (item) => !item.roles || item.roles.includes(user.role)
@@ -224,7 +230,7 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main ref={mainRef} className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

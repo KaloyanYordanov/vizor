@@ -5,3 +5,8 @@ build
 public/uploads
 *.db
 .DS_Store
+.data/
+.env.*
+!.env.example
+playwright-report/
+test-results/

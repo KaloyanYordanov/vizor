@@ -1,3 +1,4 @@
+import { ApartmentVisualisationGallery } from "~/components/visualisations/ApartmentVisualisationGallery";
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -6,6 +7,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { STATUS_UI } from "~/utils/colors";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "~/components/LanguageSwitcher";
+import { publicVisualisations } from "~/lib/visualisations/service.server";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) return [{ title: "Apartment | Vizor" }];
@@ -58,12 +60,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const currentIdx = siblings.findIndex((a: any) => a.id === apartment.id);
   const prevApt = currentIdx > 0 ? siblings[currentIdx - 1] : null;
   const nextApt = currentIdx < siblings.length - 1 ? siblings[currentIdx + 1] : null;
+  const visualisations = await publicVisualisations(apartment.id);
 
-  return json({ apartment, project, prevApt, nextApt });
+  return json({ apartment, project, prevApt, nextApt, visualisations });
 }
 
 export default function ApartmentPage() {
-  const { apartment, project, prevApt, nextApt } = useLoaderData<typeof loader>() as any;
+  const { apartment, project, prevApt, nextApt, visualisations } = useLoaderData<typeof loader>() as any;
   const { t } = useTranslation();
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -185,6 +188,10 @@ export default function ApartmentPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left column — Gallery */}
           <div className="lg:col-span-8 space-y-4">
+            <ApartmentVisualisationGallery
+              apartmentId={apartment.id}
+              initialItems={visualisations}
+            />
             {gallery.length > 0 ? (
               <>
                 {/* Main image */}
@@ -221,7 +228,7 @@ export default function ApartmentPage() {
                   </div>
                 )}
               </>
-            ) : (
+            ) : visualisations.length === 0 ? (
               <div className="aspect-[4/3] bg-white rounded-2xl border border-gray-200 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <svg className="w-16 h-16 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
@@ -230,7 +237,7 @@ export default function ApartmentPage() {
                   <p className="text-sm">{t("apartment.noImages")}</p>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {lightboxOpen && (
               <div

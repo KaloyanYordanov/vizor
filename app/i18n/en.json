@@ -331,5 +331,131 @@
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "resetZoom": "Reset zoom"
+  },
+  "visualisations": {
+    "title": "Interior visualisations",
+    "subtitle": "One photorealistic image of your apartment",
+    "floor": "Floor",
+    "drawHint": "Drag to select the apartment within the floor plan, or edit the percentages below.",
+    "sourcePlan": "Source floor plan",
+    "bounds": "Apartment crop bounds",
+    "x": "Left",
+    "y": "Top",
+    "width": "Width",
+    "height": "Height",
+    "chooseStyle": "Choose a design style",
+    "stylePreviewHint": "AI-generated interior style examples. Your image will be based on your apartment plan.",
+    "refresh": "Refresh status",
+    "notConfigured": "Generation is unavailable until the server has an OpenAI API key and generation is enabled. You can still prepare the apartment plan.",
+    "noSource": "Upload a dedicated apartment plan or add a floor plan first.",
+    "uploadPlan": "Edit apartment / upload plan",
+    "prepare": "Prepare apartment plan",
+    "stalePlan": "The source plan changed. Prepare it again before generating. Earlier results remain in history.",
+    "dedicatedSource": "Using the dedicated apartment plan.",
+    "floorSource": "Using this floor’s plan.",
+    "mappedSource": "Using the apartment outline already mapped on this floor plan.",
+    "customCropSource": "Using a custom crop from this floor plan.",
+    "manualCrop": "Mark the apartment on this floor plan",
+    "useMappedCrop": "Use the mapped apartment outline",
+    "preparingPlan": "Preparing the apartment plan…",
+    "usePlan": "Use this plan",
+    "history": "Generation history",
+    "retryFailed": "Retry generation",
+    "progress": "{{done}} of {{total}} jobs finished",
+    "published": "Published",
+    "staleResult": "Based on an earlier plan; cannot be published.",
+    "review": "Compare with plan",
+    "fullSize": "Open full-size image",
+    "assumptions": "Ceiling height, materials and outside views are illustrative unless specified in the plan. Verify visible doors, windows and proportions.",
+    "download": "Download",
+    "regenerate": "Generate another image",
+    "reviewAck": "I reviewed this apartment visualisation against the plan.",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "gallery": "Interior visualisations",
+    "disclaimer": "AI-generated design visualisations. Refer to the 2D plan for the layout.",
+    "close": "Close",
+    "uploading": "Uploading…",
+    "upload": "Upload plan image",
+    "styles": {
+      "contemporary": {
+        "name": "Contemporary",
+        "description": "Clean lines and warm neutrals."
+      },
+      "scandinavian": {
+        "name": "Scandinavian",
+        "description": "Pale wood, bright rooms and soft textiles."
+      },
+      "japandi": {
+        "name": "Japandi",
+        "description": "Natural materials and quiet simplicity."
+      },
+      "industrial": {
+        "name": "Industrial",
+        "description": "Metal, concrete textures and warm wood."
+      },
+      "modern-classic": {
+        "name": "Modern classic",
+        "description": "Classic details with contemporary comfort."
+      },
+      "modern-luxury": {
+        "name": "Modern luxury",
+        "description": "Stone, rich wood and layered lighting."
+      }
+    },
+    "errors": {
+      "INVALID_REGION": "Mark a valid apartment crop inside the plan.",
+      "FORBIDDEN": "You do not have access to this operation.",
+      "INVALID_INPUT": "Check the submitted values.",
+      "REUPLOAD_REQUIRED": "Please upload this plan to Vizor. External image URLs cannot be used for generation.",
+      "SOURCE_MISSING": "The plan image is missing. Upload it again.",
+      "IMAGE_TOO_LARGE": "Use an image below 10 MB and 25 megapixels.",
+      "UNSAFE_SVG": "This SVG contains unsupported elements. Upload a PNG, JPEG or WebP plan.",
+      "INVALID_IMAGE": "This file could not be read as a supported plan image.",
+      "UNSUPPORTED_FLOOR": "Interior visualisations are available for residential floors.",
+      "MARK_APARTMENT": "Mark the apartment on the floor plan before continuing.",
+      "STALE_PLAN": "The plan changed. Refresh and prepare the current plan.",
+      "NOT_CONFIGURED": "Image generation is not configured or is disabled.",
+      "REQUEST_CONFLICT": "This request was already submitted with different values. Refresh before trying again.",
+      "ALREADY_RUNNING": "An image is already being generated for this apartment. Wait for it to finish.",
+      "DAILY_LIMIT": "Your company’s daily allowance is exhausted. Try again tomorrow.",
+      "REVIEW_REQUIRED": "Review a successful, current image before publishing.",
+      "PROVIDER_OUTCOME_UNKNOWN": "The provider may have processed this request, but its result was lost. Generating again may incur another charge.",
+      "PROVIDER_LIMIT": "The image provider has reached a rate or spending limit. Try later.",
+      "PROVIDER_AUTH": "The server API key or model access needs attention.",
+      "PROVIDER_REJECTED": "The provider rejected this input. Check the plan or server model configuration.",
+      "INVALID_OUTPUT": "The provider did not return a usable image.",
+      "WORKER_INTERRUPTED": "Processing stopped before submission. You can try again.",
+      "GENERATION_FAILED": "Generation could not finish. Review the status before retrying.",
+      "OPERATION_FAILED": "The operation failed. Refresh status before trying again."
+    },
+    "quality": {
+      "low": "Low quality",
+      "medium": "Medium quality",
+      "high": "High quality"
+    },
+    "states": {
+      "QUEUED": "Queued",
+      "PREPARING": "Preparing",
+      "GENERATING": "Generating",
+      "SAVING": "Saving",
+      "SUCCEEDED": "Ready",
+      "FAILED": "Failed",
+      "SUPERSEDED": "Source changed"
+    },
+    "workerOffline": "The generation worker is offline. Requests will remain queued until it starts.",
+    "replacePlan": "Use a different apartment crop",
+    "costNote": "Estimates in USD from recorded image token usage and standard rates, before discounts or taxes. Missing usage is not zero cost.",
+    "providerUsage": "OpenAI usage and billing",
+    "batchCost": "Estimated image subtotal: ${{amount}}",
+    "costUnknown": "Cost unavailable — usage or pricing missing",
+    "costExcluded": "{{count}} image request(s) excluded from subtotal",
+    "imageCost": "Estimated cost: ${{amount}}",
+    "costBreakdown": "Text input: ${{text}} · Plan images: ${{image}} · Image output: ${{output}}",
+    "costRates": "Rates verified {{date}}",
+    "wholeApartment": "Apartment interior",
+    "wholeHint": "Choose a style and transform the full apartment plan into one photorealistic interior image. The result is a design interpretation; review it against the plan.",
+    "oneImageCost": "One paid image per generation. Generation continues when you leave this page.",
+    "generateApartment": "Generate apartment image"
   }
 }

@@ -303,6 +303,7 @@ ${opts.join("\n")}
             <Toggle section="apartment" field="showPricePerSqm" label="Show Price/m²" />
             <Toggle section="apartment" field="showArea" label="Show Area" />
             <Toggle section="apartment" field="showRooms" label="Show Rooms" />
+            <Toggle section="apartment" field="showVisualisations" label="Show Interior Visualisations" />
             <Toggle section="apartment" field="showFloorPlan" label="Show Floor Plan" />
             <Toggle section="apartment" field="showFeatures" label="Show Features" />
             <Toggle section="apartment" field="showDescription" label="Show Description" />

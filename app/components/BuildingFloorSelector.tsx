@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ensureRgba, STATUS_HEX } from "~/utils/colors";
+import { ensureRgba, getFloorOverlayStatus, STATUS_HEX } from "~/utils/colors";
 
 interface FloorPolygon {
   apartmentId: string; // actually floorId — reuses PolygonEditor's generic field
@@ -50,19 +50,13 @@ export function BuildingFloorSelector({
 
   const getFillColor = (floor: (typeof floors)[0] | undefined, isHovered: boolean) => {
     if (!floor) return ensureRgba("rgba(100,130,255,0.2)", isHovered ? 0.55 : 0.2);
-    const available = floor.apartments.filter((a) => a.status === "AVAILABLE").length;
-    const total = floor.apartments.length;
-
-    let baseColor: string;
-    if (total === 0) {
-      baseColor = colors.available || STATUS_HEX.AVAILABLE;
-    } else if (available === 0) {
-      baseColor = colors.sold || STATUS_HEX.SOLD;
-    } else if (available < total) {
-      baseColor = colors.reserved || STATUS_HEX.RESERVED;
-    } else {
-      baseColor = colors.available || STATUS_HEX.AVAILABLE;
-    }
+    const status = getFloorOverlayStatus(floor.apartments);
+    const baseColor =
+      status === "AVAILABLE"
+        ? colors.available || STATUS_HEX.AVAILABLE
+        : status === "RESERVED"
+          ? colors.reserved || STATUS_HEX.RESERVED
+          : colors.sold || STATUS_HEX.SOLD;
 
     const alpha = isHovered ? 0.55 : 0.3;
     return ensureRgba(baseColor, alpha);

@@ -25,6 +25,8 @@ interface PolygonEditorProps {
   apartments: { id: string; number: string; status: string }[];
   /** Called whenever polygons are modified */
   onPolygonsChange: (polygons: DrawnPolygon[]) => void;
+  /** Called when the linked apartment for the selected polygon changes */
+  onSelectedItemChange?: (itemId: string | null) => void;
   /** Label for the linkable item type (default: "Apartment") */
   itemLabel?: string;
   /** Status color map */
@@ -48,6 +50,7 @@ export function PolygonEditor({
   polygons,
   apartments,
   onPolygonsChange,
+  onSelectedItemChange,
   itemLabel = "Apartment",
   statusColors = {
     AVAILABLE: ensureRgba(STATUS_HEX.AVAILABLE, 0.35),
@@ -267,6 +270,10 @@ export function PolygonEditor({
 
   const selectedPolygon = selectedPolygonIdx !== null ? polygons[selectedPolygonIdx] : null;
   const selectedApt = selectedPolygon ? getApartmentForPolygon(selectedPolygon) : null;
+
+  useEffect(() => {
+    onSelectedItemChange?.(selectedApt?.id ?? null);
+  }, [onSelectedItemChange, selectedApt?.id]);
 
   return (
     <div className={`space-y-3 ${className}`}>

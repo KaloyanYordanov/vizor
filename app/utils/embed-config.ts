@@ -66,6 +66,7 @@ export interface EmbedApartmentConfig {
   showPricePerSqm: boolean;
   showArea: boolean;
   showRooms: boolean;
+  showVisualisations: boolean;
   showFloorPlan: boolean;
   showFeatures: boolean;
   showDescription: boolean;
@@ -182,6 +183,7 @@ export const DEFAULT_EMBED_CONFIG: EmbedConfig = {
     showPricePerSqm: true,
     showArea: true,
     showRooms: true,
+    showVisualisations: true,
     showFloorPlan: true,
     showFeatures: true,
     showDescription: true,
